@@ -155,22 +155,21 @@ prioridad" y son los tres más visibles después del Pinball.
 - [ ] **F6.2 — Acceso debug en producción**: `title_screen.dart:328`
   y `:590` muestran "ACCESO RÁPIDO · MENÚ DE DEBUG". Confirmar que
   está detrás de un flag o eliminarlo antes de release final.
-- [ ] **F6.3 — `dart:js_interop` sin conditional import**
-  (detectado 2026-05-17): `lib/utilities/audio_procedural.dart:1`
-  importa `dart:js_interop` directamente. Sólo existe en web →
-  rompe `flutter test` (VM). Hace que sea imposible escribir
-  widget tests que toquen `title_screen.dart`. Solución: stub
-  pattern con conditional import o `kIsWeb` guard.
-- [ ] **F6.4 — Tests obsoletos**: `test/widget_test.dart` busca
-  texto "CAMARADA" / "DEL VACÍO" que ya no existen (el título es
-  imagen `portada_principal.png`). Sustituir por aserciones
-  verificables. Tras F6.3+F6.4, debe pasar `flutter test --platform chrome`.
+- [x] **F6.3 — `dart:js_interop` sin conditional import**
+  (resuelto 2026-05-17): split en tres archivos —
+  `audio_procedural.dart` (export condicional),
+  `audio_procedural_web.dart` (implementación real, antes
+  `audio_procedural.dart`) y `audio_procedural_stub.dart` (no-op
+  para VM). Los 6 callers no necesitan cambios.
+- [x] **F6.4 — Tests obsoletos** (resuelto 2026-05-17):
+  `widget_test.dart` ahora busca el texto "INICIAR PROCEDIMIENTO"
+  del botón canónico (BotonPropaganda aplica `.toUpperCase()`
+  internamente). Comprueba también que el `MaterialApp` se monta.
 
 ## Verificaciones rápidas que han pasado
 
 - ✅ `flutter analyze` → "No issues found!" (Flutter 3.41.9, 2026-05-17).
-- ❌ `flutter test` → falla por F6.3 (import web).
-- ❌ `flutter test --platform chrome` → falla por F6.4 (test obsoleto).
+- ✅ `flutter test` → "All tests passed!" (tras F6.3 y F6.4, 2026-05-17).
 
 ## Patrón canónico de cableado (referencia)
 
