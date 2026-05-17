@@ -1,4 +1,5 @@
 import 'dart:math' as math;
+import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
@@ -6,6 +7,7 @@ import '../models/game_state.dart';
 import '../theme.dart';
 import '../widgets/propaganda_button.dart';
 import 'pintor_rotulador.dart';
+import 'utilidades_carga_sprites.dart';
 import 'widget_pausa.dart';
 import '../widgets/breathing_stick_figure.dart';
 import '../painters/stick_figure_painter.dart';
@@ -135,11 +137,34 @@ class _PantallaDokumentrisState extends State<PantallaDokumentris>
     ],
   ];
 
+  // Sprites de §19 — cableado anticipado.
+  // 7 celdas-sello indexadas por tipo (I=0, O=1, T=2, L=3, J=4, S=5, Z=6).
+  List<ui.Image?> imagenesCeldaPorTipo = List<ui.Image?>.filled(7, null);
+  ui.Image? imagenEscritorio; // §19.2
+
   @override
   void initState() {
     super.initState();
     _resetearPartida();
     tickerJuego = createTicker(_alTick)..start();
+    _cargarSprites();
+  }
+
+  Future<void> _cargarSprites() async {
+    // Nombres canónicos del briefing §19.1: dokumentris_celda_<id>.png
+    final rutasCeldas = List<String>.generate(
+      7,
+      (indice) => 'assets/svg/dokumentris_celda_$indice.png',
+    );
+    final resultados = await cargarLoteOpcional(<String>[
+      ...rutasCeldas,
+      'assets/svg/dokumentris_escritorio.png',
+    ]);
+    if (!mounted) return;
+    setState(() {
+      imagenesCeldaPorTipo = resultados.sublist(0, 7);
+      imagenEscritorio = resultados[7];
+    });
   }
 
   void _resetearPartida() {
@@ -628,6 +653,8 @@ class _PantallaDokumentrisState extends State<PantallaDokumentris>
                             ? 0
                             : msAcumuladosAnimacionLineas /
                                 duracionAnimacionLineasMs,
+                        imagenesCeldaPorTipo: imagenesCeldaPorTipo,
+                        imagenEscritorio: imagenEscritorio,
                       ),
                     ),
                   ),
@@ -749,7 +776,10 @@ class _PantallaDokumentrisState extends State<PantallaDokumentris>
                 ),
               ),
               child: CustomPaint(
-                painter: _PintorPiezaPreview(pieza: piezaSiguiente),
+                painter: _PintorPiezaPreview(
+                  pieza: piezaSiguiente,
+                  imagenesCeldaPorTipo: imagenesCeldaPorTipo,
+                ),
               ),
             ),
           ),
@@ -906,12 +936,18 @@ class _PintorTableroDokumentris extends CustomPainter {
   final _PiezaTetromino? piezaActual;
   final List<int> filasParaBorrar;
   final double fragmentoAnimacionBorrado;
+  /// §19.1 — celda-sello por tipo (0..6). null mientras el asset no exista.
+  final List<ui.Image?> imagenesCeldaPorTipo;
+  /// §19.2 — marco del escritorio detrás del tablero.
+  final ui.Image? imagenEscritorio;
 
   _PintorTableroDokumentris({
     required this.celdasFijas,
     required this.piezaActual,
     required this.filasParaBorrar,
     required this.fragmentoAnimacionBorrado,
+    this.imagenesCeldaPorTipo = const <ui.Image?>[],
+    this.imagenEscritorio,
   });
 
   @override
@@ -1209,7 +1245,13 @@ class _PintorTableroDokumentris extends CustomPainter {
 
 class _PintorPiezaPreview extends CustomPainter {
   final _PiezaTetromino pieza;
-  _PintorPiezaPreview({required this.pieza});
+  /// §19.1 — celda-sello por tipo. Si está disponible para `pieza.tipo`,
+  /// el preview puede pintarse con el sprite en vez de procedural.
+  final List<ui.Image?> imagenesCeldaPorTipo;
+  _PintorPiezaPreview({
+    required this.pieza,
+    this.imagenesCeldaPorTipo = const <ui.Image?>[],
+  });
 
   @override
   void paint(Canvas canvas, Size size) {

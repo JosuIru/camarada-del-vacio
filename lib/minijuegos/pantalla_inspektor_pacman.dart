@@ -1,4 +1,5 @@
 import 'dart:math' as math;
+import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
@@ -7,6 +8,7 @@ import '../theme.dart';
 import '../widgets/propaganda_button.dart';
 import 'pintor_rotulador.dart';
 import 'sprite_cadete.dart';
+import 'utilidades_carga_sprites.dart';
 import 'widget_pausa.dart';
 
 /// INSPEKTOR PAC-MAN.
@@ -97,11 +99,46 @@ class _PantallaInspektorPacmanState extends State<PantallaInspektorPacman>
   int totalBonusComidos = 0;
   Offset? posicionBonusSello; // celda (col, fila) +0.5
 
+  // Sprites de §16 — cableado anticipado.
+  ui.Image? imagenInspektor; // §16.1
+  ui.Image? imagenKomisarioGorro; // §16.2 (variante gorro)
+  ui.Image? imagenKomisarioMonoculo; // §16.2 (variante monóculo)
+  ui.Image? imagenKomisarioBigote; // §16.2 (variante bigote)
+  ui.Image? imagenKomisarioPipa; // §16.2 (variante pipa)
+  ui.Image? imagenExpediente; // §16.3
+  ui.Image? imagenTintaPower; // §16.4
+  ui.Image? imagenFondoLaberinto; // §16.5
+
   @override
   void initState() {
     super.initState();
     _inicializarTablero();
     tickerJuego = createTicker(_alTick)..start();
+    _cargarSprites();
+  }
+
+  Future<void> _cargarSprites() async {
+    final resultados = await cargarLoteOpcional(<String>[
+      'assets/svg/pacman_inspektor.png',
+      'assets/svg/pacman_komisario_gorro.png',
+      'assets/svg/pacman_komisario_monoculo.png',
+      'assets/svg/pacman_komisario_bigote.png',
+      'assets/svg/pacman_komisario_pipa.png',
+      'assets/svg/pacman_expediente.png',
+      'assets/svg/pacman_tinta_power.png',
+      'assets/svg/pacman_fondo_laberinto.png',
+    ]);
+    if (!mounted) return;
+    setState(() {
+      imagenInspektor = resultados[0];
+      imagenKomisarioGorro = resultados[1];
+      imagenKomisarioMonoculo = resultados[2];
+      imagenKomisarioBigote = resultados[3];
+      imagenKomisarioPipa = resultados[4];
+      imagenExpediente = resultados[5];
+      imagenTintaPower = resultados[6];
+      imagenFondoLaberinto = resultados[7];
+    });
   }
 
   @override
@@ -748,6 +785,14 @@ class _PantallaInspektorPacmanState extends State<PantallaInspektorPacman>
               tiempoBonusRestanteSegundos: tiempoBonusRestanteSegundos,
               partidaTerminada: partidaTerminada,
               partidaGanada: partidaGanada,
+              imagenInspektor: imagenInspektor,
+              imagenKomisarioGorro: imagenKomisarioGorro,
+              imagenKomisarioMonoculo: imagenKomisarioMonoculo,
+              imagenKomisarioBigote: imagenKomisarioBigote,
+              imagenKomisarioPipa: imagenKomisarioPipa,
+              imagenExpediente: imagenExpediente,
+              imagenTintaPower: imagenTintaPower,
+              imagenFondoLaberinto: imagenFondoLaberinto,
             ),
             child: Container(),
           ),
@@ -953,6 +998,15 @@ class _PintorTableroPacman extends CustomPainter {
   final double tiempoBonusRestanteSegundos;
   final bool partidaTerminada;
   final bool partidaGanada;
+  /// Sprites §16 — null si asset no generado / no cargado.
+  final ui.Image? imagenInspektor;
+  final ui.Image? imagenKomisarioGorro;
+  final ui.Image? imagenKomisarioMonoculo;
+  final ui.Image? imagenKomisarioBigote;
+  final ui.Image? imagenKomisarioPipa;
+  final ui.Image? imagenExpediente;
+  final ui.Image? imagenTintaPower;
+  final ui.Image? imagenFondoLaberinto;
 
   _PintorTableroPacman({
     required this.celdas,
@@ -969,6 +1023,14 @@ class _PintorTableroPacman extends CustomPainter {
     required this.tiempoBonusRestanteSegundos,
     required this.partidaTerminada,
     required this.partidaGanada,
+    this.imagenInspektor,
+    this.imagenKomisarioGorro,
+    this.imagenKomisarioMonoculo,
+    this.imagenKomisarioBigote,
+    this.imagenKomisarioPipa,
+    this.imagenExpediente,
+    this.imagenTintaPower,
+    this.imagenFondoLaberinto,
   });
 
   @override

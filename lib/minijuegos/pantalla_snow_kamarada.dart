@@ -1,4 +1,5 @@
 import 'dart:math' as math;
+import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
@@ -6,6 +7,7 @@ import '../models/game_state.dart';
 import '../widgets/propaganda_button.dart';
 import 'pintor_rotulador.dart';
 import 'sprite_cadete.dart';
+import 'utilidades_carga_sprites.dart';
 import 'widget_pausa.dart';
 
 /// SNOW KAMARADA.
@@ -88,12 +90,48 @@ class _PantallaSnowKamaradaState extends State<PantallaSnowKamarada>
   Offset? posicionCafePowerUp; // coords mundo (0..1) cuando aparece
   bool cafePowerUpDisponible = false;
 
+  // Sprites de §14 — cableado anticipado. Mientras no existan los PNGs
+  // (o no hayan terminado de cargar), todo se pinta procedural.
+  ui.Image? imagenCadeteUshankaF01; // §14.1
+  ui.Image? imagenCadeteUshankaF02;
+  ui.Image? imagenCadeteUshankaF03;
+  ui.Image? imagenCadeteUshankaF04;
+  ui.Image? imagenCapitalista; // §14.2
+  ui.Image? imagenFormularioProyectil; // §14.3
+  ui.Image? imagenBolaPapel; // §14.4
+  ui.Image? imagenFondoPaisaje; // §14.5
+
   @override
   void initState() {
     super.initState();
     _generarOleada();
     _sembrarNieve();
     tickerJuego = createTicker(_alTick)..start();
+    _cargarSprites();
+  }
+
+  Future<void> _cargarSprites() async {
+    final resultados = await cargarLoteOpcional(<String>[
+      'assets/svg/snow_cadete_ushanka_walk_f01.png',
+      'assets/svg/snow_cadete_ushanka_walk_f02.png',
+      'assets/svg/snow_cadete_ushanka_walk_f03.png',
+      'assets/svg/snow_cadete_ushanka_walk_f04.png',
+      'assets/svg/snow_capitalista.png',
+      'assets/svg/snow_formulario_proyectil.png',
+      'assets/svg/snow_bola_papel.png',
+      'assets/svg/snow_fondo_paisaje.png',
+    ]);
+    if (!mounted) return;
+    setState(() {
+      imagenCadeteUshankaF01 = resultados[0];
+      imagenCadeteUshankaF02 = resultados[1];
+      imagenCadeteUshankaF03 = resultados[2];
+      imagenCadeteUshankaF04 = resultados[3];
+      imagenCapitalista = resultados[4];
+      imagenFormularioProyectil = resultados[5];
+      imagenBolaPapel = resultados[6];
+      imagenFondoPaisaje = resultados[7];
+    });
   }
 
   @override
@@ -852,6 +890,14 @@ class _PantallaSnowKamaradaState extends State<PantallaSnowKamarada>
                 cafePowerUpDisponible ? posicionCafePowerUp : null,
             cafePowerUpActivo: cafePowerUpActivo,
             tiempoEfectoCafeRestante: tiempoEfectoCafeRestante,
+            imagenCadeteUshankaF01: imagenCadeteUshankaF01,
+            imagenCadeteUshankaF02: imagenCadeteUshankaF02,
+            imagenCadeteUshankaF03: imagenCadeteUshankaF03,
+            imagenCadeteUshankaF04: imagenCadeteUshankaF04,
+            imagenCapitalista: imagenCapitalista,
+            imagenFormularioProyectil: imagenFormularioProyectil,
+            imagenBolaPapel: imagenBolaPapel,
+            imagenFondoPaisaje: imagenFondoPaisaje,
           ),
           child: Container(),
         ),
@@ -1029,6 +1075,16 @@ class _PintorSnowKamarada extends CustomPainter {
   final Offset? posicionCafePowerUp;
   final bool cafePowerUpActivo;
   final double tiempoEfectoCafeRestante;
+  /// Sprites §14 — pueden ser null si el asset no se ha generado o aún
+  /// no ha terminado de cargar. En ese caso se cae al render procedural.
+  final ui.Image? imagenCadeteUshankaF01;
+  final ui.Image? imagenCadeteUshankaF02;
+  final ui.Image? imagenCadeteUshankaF03;
+  final ui.Image? imagenCadeteUshankaF04;
+  final ui.Image? imagenCapitalista;
+  final ui.Image? imagenFormularioProyectil;
+  final ui.Image? imagenBolaPapel;
+  final ui.Image? imagenFondoPaisaje;
 
   _PintorSnowKamarada({
     required this.plataformas,
@@ -1047,6 +1103,14 @@ class _PintorSnowKamarada extends CustomPainter {
     required this.posicionCafePowerUp,
     required this.cafePowerUpActivo,
     required this.tiempoEfectoCafeRestante,
+    this.imagenCadeteUshankaF01,
+    this.imagenCadeteUshankaF02,
+    this.imagenCadeteUshankaF03,
+    this.imagenCadeteUshankaF04,
+    this.imagenCapitalista,
+    this.imagenFormularioProyectil,
+    this.imagenBolaPapel,
+    this.imagenFondoPaisaje,
   });
 
   Offset _r(Offset p, Size size) =>

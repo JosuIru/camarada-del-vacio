@@ -1879,6 +1879,13 @@ animada y de papeleo**:
   frase contiene palabras clave de papeleo (F-447, expediente,
   formulario, comité, sello, papel, anota).
 
+✅ **Hecho — Hotspots de la cápsula (§12)** (auditoría 2026-05-17):
+los 9 hotspots invisibles tienen ya su sprite dedicado en
+`assets/svg/capsula_*.png` y están cableados con `IconoHotspotImagen`
+en `room_screen.dart`. Cubre: retrato familiar, catre, mesilla con
+vela, espejo y lavabo, estante de libros, uniforme colgado,
+calendario, intercomunicador, manguera de combustible.
+
 ✅ **Hecho — Inspector Central**:
 - `assets/svg/inspector_central.svg`: cableado en
   `epilogo_screen.dart` como retrato decorativo bajo el título
@@ -2739,22 +2746,21 @@ a slight slump suggesting recent use. Small red drip stain on the
 floor under the nozzle.
 ```
 
-### Cableado pendiente — sustitución cuando lleguen los assets
+### Cableado completado (2026-05-17)
 
-Para cada hotspot, sustituir en `lib/screens/room_screen.dart`:
+Los 9 hotspots ya están cableados en `lib/screens/room_screen.dart`
+con `IconoHotspotImagen(rutaAsset: 'assets/svg/capsula_<id>.png',
+anchoSombra: …)`. `IconoHotspotImagen` tolera ausencia silenciosa
+del PNG via `errorBuilder`, así que el cableado es seguro incluso
+si más adelante alguno de los assets se sustituye.
 
-```dart
-// ANTES
-representacion: const SizedBox.shrink(),
+Caso especial: `mesilla_vela` se migró del antiguo
+`mueble_vela.png` (sólo vela) al `capsula_mesilla_vela.png` (§12.3,
+mesilla + vela en un único asset mejor compuesto). El primero queda
+huérfano pero útil como anchor visual para otras escenas que
+necesiten sólo la vela.
 
-// DESPUÉS
-representacion: const IconoHotspotImagen(
-  rutaAsset: 'assets/svg/capsula_<id>.png',
-  anchoSombra: <ver tabla>,
-),
-```
-
-Anchos de sombra recomendados:
+Anchos de sombra aplicados (tabla canónica para futuras revisiones):
 
 | Hotspot | `anchoSombra` |
 |---|---|

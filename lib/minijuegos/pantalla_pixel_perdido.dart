@@ -1,4 +1,5 @@
 import 'dart:math' as math;
+import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
@@ -6,6 +7,7 @@ import '../models/game_state.dart';
 import '../widgets/propaganda_button.dart';
 import 'pintor_rotulador.dart';
 import 'sprite_cadete.dart';
+import 'utilidades_carga_sprites.dart';
 import 'widget_pausa.dart';
 
 /// COSMONAUTA DEL PÍXEL PERDIDO.
@@ -77,11 +79,37 @@ class _PantallaPixelPerdidoState extends State<PantallaPixelPerdido>
   // Camara: cuanto del mapa se ve a la derecha.
   double scrollCamara = 0;
 
+  // Sprites pixel-art de §17 — cableado anticipado.
+  ui.Image? imagenCadetePixel; // §17.1
+  ui.Image? imagenKopek; // §17.2
+  ui.Image? imagenCharcoTinta; // §17.3
+  ui.Image? imagenBloqueTile; // §17.4
+  ui.Image? imagenBanderaMeta; // §17.5
+
   @override
   void initState() {
     super.initState();
     _cargarMapa();
     tickerJuego = createTicker(_alTick)..start();
+    _cargarSprites();
+  }
+
+  Future<void> _cargarSprites() async {
+    final resultados = await cargarLoteOpcional(<String>[
+      'assets/svg/pixel_cadete_idle.png',
+      'assets/svg/pixel_kopek.png',
+      'assets/svg/pixel_charco_tinta.png',
+      'assets/svg/pixel_bloque_tile.png',
+      'assets/svg/pixel_bandera_meta.png',
+    ]);
+    if (!mounted) return;
+    setState(() {
+      imagenCadetePixel = resultados[0];
+      imagenKopek = resultados[1];
+      imagenCharcoTinta = resultados[2];
+      imagenBloqueTile = resultados[3];
+      imagenBanderaMeta = resultados[4];
+    });
   }
 
   @override
@@ -465,6 +493,11 @@ class _PantallaPixelPerdidoState extends State<PantallaPixelPerdido>
             direccionMira: direccionMira,
             partidaTerminada: partidaTerminada,
             partidaGanada: partidaGanada,
+            imagenCadetePixel: imagenCadetePixel,
+            imagenKopek: imagenKopek,
+            imagenCharcoTinta: imagenCharcoTinta,
+            imagenBloqueTile: imagenBloqueTile,
+            imagenBanderaMeta: imagenBanderaMeta,
           ),
           child: Container(),
         ),
@@ -555,6 +588,12 @@ class _PintorPixelPerdido extends CustomPainter {
   final int direccionMira;
   final bool partidaTerminada;
   final bool partidaGanada;
+  /// Sprites §17 — null si asset no generado / no cargado.
+  final ui.Image? imagenCadetePixel;
+  final ui.Image? imagenKopek;
+  final ui.Image? imagenCharcoTinta;
+  final ui.Image? imagenBloqueTile;
+  final ui.Image? imagenBanderaMeta;
 
   _PintorPixelPerdido({
     required this.mapa,
@@ -565,6 +604,11 @@ class _PintorPixelPerdido extends CustomPainter {
     required this.direccionMira,
     required this.partidaTerminada,
     required this.partidaGanada,
+    this.imagenCadetePixel,
+    this.imagenKopek,
+    this.imagenCharcoTinta,
+    this.imagenBloqueTile,
+    this.imagenBanderaMeta,
   });
 
   @override

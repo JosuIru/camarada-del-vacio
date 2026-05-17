@@ -1,4 +1,5 @@
 import 'dart:math' as math;
+import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
@@ -7,6 +8,7 @@ import '../widgets/propaganda_button.dart';
 import '../widgets/breathing_stick_figure.dart';
 import '../painters/stick_figure_painter.dart';
 import 'pintor_rotulador.dart';
+import 'utilidades_carga_sprites.dart';
 
 /// FRECUENCIA 7.47 MHz - DIAL SECRETO.
 ///
@@ -127,10 +129,36 @@ class _PantallaFrecuencia747State extends State<PantallaFrecuencia747>
     ),
   ];
 
+  // Sprites de §18 — cableado anticipado.
+  ui.Image? imagenMarcoCompleto; // §18.1
+  ui.Image? imagenAgujaDial; // §18.2
+  ui.Image? imagenAgujaVu; // §18.3
+  ui.Image? imagenPulsoSintonizado; // §18.4
+  ui.Image? imagenPanelMensaje; // §18.5
+
   @override
   void initState() {
     super.initState();
     tickerRadio = createTicker(_alTick)..start();
+    _cargarSprites();
+  }
+
+  Future<void> _cargarSprites() async {
+    final resultados = await cargarLoteOpcional(<String>[
+      'assets/svg/radio_marco_completo.png',
+      'assets/svg/radio_aguja_dial.png',
+      'assets/svg/radio_aguja_vu.png',
+      'assets/svg/radio_pulso_sintonizado.png',
+      'assets/svg/radio_panel_mensaje.png',
+    ]);
+    if (!mounted) return;
+    setState(() {
+      imagenMarcoCompleto = resultados[0];
+      imagenAgujaDial = resultados[1];
+      imagenAgujaVu = resultados[2];
+      imagenPulsoSintonizado = resultados[3];
+      imagenPanelMensaje = resultados[4];
+    });
   }
 
   @override
@@ -383,6 +411,11 @@ class _PantallaFrecuencia747State extends State<PantallaFrecuencia747>
                 flagsActivos: widget.estado.flagsActivos,
                 faseTickRadio: faseTickRadio,
                 proximidadAEstacion: _calcularProximidadAEstacion(),
+                imagenMarcoCompleto: imagenMarcoCompleto,
+                imagenAgujaDial: imagenAgujaDial,
+                imagenAgujaVu: imagenAgujaVu,
+                imagenPulsoSintonizado: imagenPulsoSintonizado,
+                imagenPanelMensaje: imagenPanelMensaje,
               ),
               child: Container(),
             ),
@@ -644,6 +677,12 @@ class _PintorDialRadio extends CustomPainter {
   final Set<String> flagsActivos;
   final double faseTickRadio;
   final double proximidadAEstacion;
+  /// Sprites §18 — null si asset no generado / no cargado.
+  final ui.Image? imagenMarcoCompleto;
+  final ui.Image? imagenAgujaDial;
+  final ui.Image? imagenAgujaVu;
+  final ui.Image? imagenPulsoSintonizado;
+  final ui.Image? imagenPanelMensaje;
 
   _PintorDialRadio({
     required this.frecuenciaActual,
@@ -655,6 +694,11 @@ class _PintorDialRadio extends CustomPainter {
     required this.flagsActivos,
     required this.faseTickRadio,
     required this.proximidadAEstacion,
+    this.imagenMarcoCompleto,
+    this.imagenAgujaDial,
+    this.imagenAgujaVu,
+    this.imagenPulsoSintonizado,
+    this.imagenPanelMensaje,
   });
 
   @override

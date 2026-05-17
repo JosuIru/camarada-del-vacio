@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import '../models/game_state.dart';
 import '../widgets/propaganda_button.dart';
 import 'pintor_rotulador.dart';
+import 'utilidades_carga_sprites.dart';
 import 'widget_pausa.dart';
 
 /// COSMOOM DOOM.
@@ -76,11 +77,18 @@ class _PantallaCosmoomDoomState extends State<PantallaCosmoomDoom>
   final List<_BurocrataZombi> enemigos = <_BurocrataZombi>[];
   final List<_SelloVolante> sellosLanzados = <_SelloVolante>[];
   double tiempoFlashDolor = 0;
-  // Sprites del burócrata-zombi. Se cargan asincrónicamente en
-  // [initState]; mientras llegan, el painter cae al modo geométrico
-  // antiguo para que nunca haya pantalla negra.
+  // Sprites del minijuego. Se cargan asincrónicamente en [initState];
+  // mientras llegan (o si el asset no existe todavía — cableado
+  // anticipado), el painter cae al modo geométrico para que nunca
+  // haya pantalla negra. Cada uno está documentado en
+  // `BRIEFING_ARTE.md` §13.
   ui.Image? imagenZombiFrente;
   ui.Image? imagenZombiPerfil;
+  ui.Image? imagenParedMinisterio; // §13.1 — 512×512 tileable
+  ui.Image? imagenSueloBaldosa; // §13.2 — 512×512 tileable XY
+  ui.Image? imagenMesaBurocratica; // §13.3 — 320×440 billboard
+  ui.Image? imagenSelloProyectil; // §13.4 — 160×160 sprite
+  ui.Image? imagenHudCadete; // §13.5 — 800×260 marco HUD
 
   static const double fovTotal = 1.15; // ~66 grados (estandar Doom/Wolf)
   static const double velocidadCaminarJugador = 3.2;
@@ -104,27 +112,33 @@ class _PantallaCosmoomDoomState extends State<PantallaCosmoomDoom>
     );
     _generarEnemigos();
     tickerJuego = createTicker(_alTick)..start();
-    _cargarSpritesZombi();
+    _cargarSprites();
   }
 
-  Future<void> _cargarSpritesZombi() async {
-    final frente = await _cargarImagenDesdeAsset(
-        'assets/images/burocrata_zombi_frente.png');
-    final perfil = await _cargarImagenDesdeAsset(
-        'assets/images/burocrata_zombi_perfil.png');
+  /// Carga los 7 sprites del Doom en paralelo. Los 2 burócratas-zombi
+  /// ya existen como PNG; los 5 de §13 son cableado anticipado: si
+  /// `assets/svg/doom_*.png` no existe aún, la utility devuelve null
+  /// y el painter mantiene el render procedural actual.
+  Future<void> _cargarSprites() async {
+    final resultados = await cargarLoteOpcional(<String>[
+      'assets/images/burocrata_zombi_frente.png',
+      'assets/images/burocrata_zombi_perfil.png',
+      'assets/svg/doom_pared_ministerio.png',
+      'assets/svg/doom_suelo_baldosa.png',
+      'assets/svg/doom_mesa_burocratica.png',
+      'assets/svg/doom_sello_proyectil.png',
+      'assets/svg/doom_hud_cadete.png',
+    ]);
     if (!mounted) return;
     setState(() {
-      imagenZombiFrente = frente;
-      imagenZombiPerfil = perfil;
+      imagenZombiFrente = resultados[0];
+      imagenZombiPerfil = resultados[1];
+      imagenParedMinisterio = resultados[2];
+      imagenSueloBaldosa = resultados[3];
+      imagenMesaBurocratica = resultados[4];
+      imagenSelloProyectil = resultados[5];
+      imagenHudCadete = resultados[6];
     });
-  }
-
-  Future<ui.Image> _cargarImagenDesdeAsset(String ruta) async {
-    final ByteData datos = await rootBundle.load(ruta);
-    final Uint8List bytes = datos.buffer.asUint8List();
-    final ui.Codec codec = await ui.instantiateImageCodec(bytes);
-    final ui.FrameInfo frame = await codec.getNextFrame();
-    return frame.image;
   }
 
   @override
@@ -591,6 +605,11 @@ class _PantallaCosmoomDoomState extends State<PantallaCosmoomDoom>
             partidaGanada: partidaGanada,
             imagenZombiFrente: imagenZombiFrente,
             imagenZombiPerfil: imagenZombiPerfil,
+            imagenParedMinisterio: imagenParedMinisterio,
+            imagenSueloBaldosa: imagenSueloBaldosa,
+            imagenMesaBurocratica: imagenMesaBurocratica,
+            imagenSelloProyectil: imagenSelloProyectil,
+            imagenHudCadete: imagenHudCadete,
           ),
           child: Container(),
         ),
@@ -720,11 +739,17 @@ class _PintorVistaDoom extends CustomPainter {
   final int puntuacionActual;
   final bool partidaTerminada;
   final bool partidaGanada;
-  /// Sprites de los burócratas-zombi. Pueden ser null durante los
-  /// primeros frames mientras se cargan; en ese caso se cae al
-  /// dibujado geométrico original como fallback.
+  /// Sprites del minijuego. Pueden ser null durante los primeros
+  /// frames mientras se cargan o si el asset aún no se ha generado
+  /// (cableado anticipado §13.x); en ambos casos el painter cae al
+  /// dibujado procedural como fallback.
   final ui.Image? imagenZombiFrente;
   final ui.Image? imagenZombiPerfil;
+  final ui.Image? imagenParedMinisterio; // §13.1
+  final ui.Image? imagenSueloBaldosa; // §13.2
+  final ui.Image? imagenMesaBurocratica; // §13.3
+  final ui.Image? imagenSelloProyectil; // §13.4
+  final ui.Image? imagenHudCadete; // §13.5
 
   _PintorVistaDoom({
     required this.mapa,
@@ -742,6 +767,11 @@ class _PintorVistaDoom extends CustomPainter {
     required this.partidaGanada,
     this.imagenZombiFrente,
     this.imagenZombiPerfil,
+    this.imagenParedMinisterio,
+    this.imagenSueloBaldosa,
+    this.imagenMesaBurocratica,
+    this.imagenSelloProyectil,
+    this.imagenHudCadete,
   });
 
   @override

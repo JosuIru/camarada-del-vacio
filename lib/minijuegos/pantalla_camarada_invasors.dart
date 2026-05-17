@@ -1,4 +1,5 @@
 import 'dart:math' as math;
+import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
@@ -6,6 +7,7 @@ import '../models/game_state.dart';
 import '../widgets/propaganda_button.dart';
 import 'pintor_rotulador.dart';
 import 'sprite_cadete.dart';
+import 'utilidades_carga_sprites.dart';
 import 'widget_pausa.dart';
 
 /// CAMARADA INVASORS.
@@ -75,12 +77,48 @@ class _PantallaCamaradaInvasorsState extends State<PantallaCamaradaInvasors>
   // baja para incrementar la presión.
   double margenSuperiorOleada = 0.10;
 
+  // Sprites de §15 — cableado anticipado. Hasta que existan los PNGs,
+  // el painter mantiene el render procedural.
+  ui.Image? imagenTioSam; // §15.1
+  ui.Image? imagenSoldadoUsa; // §15.2
+  ui.Image? imagenHamburguesa; // §15.3
+  ui.Image? imagenCocaCola; // §15.4
+  ui.Image? imagenCanon; // §15.5
+  ui.Image? imagenBunkerF447; // §15.6
+  ui.Image? imagenProyectilRojo; // §15.7
+  ui.Image? imagenProyectilDollar; // §15.8
+
   @override
   void initState() {
     super.initState();
     _generarFlota();
     _generarBunkers();
     tickerJuego = createTicker(_alTick)..start();
+    _cargarSprites();
+  }
+
+  Future<void> _cargarSprites() async {
+    final resultados = await cargarLoteOpcional(<String>[
+      'assets/svg/invasors_tio_sam.png',
+      'assets/svg/invasors_soldado_usa.png',
+      'assets/svg/invasors_hamburguesa.png',
+      'assets/svg/invasors_coca_cola.png',
+      'assets/svg/invasors_canon.png',
+      'assets/svg/invasors_bunker_f447.png',
+      'assets/svg/invasors_proyectil_rojo.png',
+      'assets/svg/invasors_proyectil_dollar.png',
+    ]);
+    if (!mounted) return;
+    setState(() {
+      imagenTioSam = resultados[0];
+      imagenSoldadoUsa = resultados[1];
+      imagenHamburguesa = resultados[2];
+      imagenCocaCola = resultados[3];
+      imagenCanon = resultados[4];
+      imagenBunkerF447 = resultados[5];
+      imagenProyectilRojo = resultados[6];
+      imagenProyectilDollar = resultados[7];
+    });
   }
 
   @override
@@ -577,6 +615,14 @@ class _PantallaCamaradaInvasorsState extends State<PantallaCamaradaInvasors>
             tiempoBannerOleadaRestante: tiempoBannerOleadaRestante,
             partidaTerminada: partidaTerminada,
             partidaGanada: partidaGanada,
+            imagenTioSam: imagenTioSam,
+            imagenSoldadoUsa: imagenSoldadoUsa,
+            imagenHamburguesa: imagenHamburguesa,
+            imagenCocaCola: imagenCocaCola,
+            imagenCanon: imagenCanon,
+            imagenBunkerF447: imagenBunkerF447,
+            imagenProyectilRojo: imagenProyectilRojo,
+            imagenProyectilDollar: imagenProyectilDollar,
           ),
           child: Container(),
         ),
@@ -714,6 +760,15 @@ class _PintorMundoInvasors extends CustomPainter {
   final double tiempoBannerOleadaRestante;
   final bool partidaTerminada;
   final bool partidaGanada;
+  /// Sprites §15 — null si no cargados / asset inexistente.
+  final ui.Image? imagenTioSam;
+  final ui.Image? imagenSoldadoUsa;
+  final ui.Image? imagenHamburguesa;
+  final ui.Image? imagenCocaCola;
+  final ui.Image? imagenCanon;
+  final ui.Image? imagenBunkerF447;
+  final ui.Image? imagenProyectilRojo;
+  final ui.Image? imagenProyectilDollar;
 
   _PintorMundoInvasors({
     required this.flota,
@@ -729,6 +784,14 @@ class _PintorMundoInvasors extends CustomPainter {
     required this.tiempoBannerOleadaRestante,
     required this.partidaTerminada,
     required this.partidaGanada,
+    this.imagenTioSam,
+    this.imagenSoldadoUsa,
+    this.imagenHamburguesa,
+    this.imagenCocaCola,
+    this.imagenCanon,
+    this.imagenBunkerF447,
+    this.imagenProyectilRojo,
+    this.imagenProyectilDollar,
   });
 
   Offset _r(Offset p, Size size) =>

@@ -1,8 +1,10 @@
 import 'dart:math' as math;
+import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'pintor_rotulador.dart';
 import 'sprite_cadete.dart';
+import 'utilidades_carga_sprites.dart';
 
 /// Tipo de prota en el que el cadete se transforma al entrar
 /// a un lugar oculto. Define qué silueta dibuja la pantalla de
@@ -53,10 +55,44 @@ class _PantallaTransformacionState extends State<PantallaTransformacion>
 
   static const double duracionTotalSegundos = 2.6;
 
+  // Sprites de §20 — cableado anticipado. Las 6 formas del cadete usan
+  // sprites diferentes: 2 propios (pieza-tetris, aguja-radio) y 4
+  // reutilizados de otros minijuegos para coherencia visual con el
+  // destino. Cuando el asset falte, se cae al render procedural del
+  // painter (que también vive en este archivo).
+  ui.Image? imagenFormaCadete; // §2.0 — cadete idle (clase actual)
+  ui.Image? imagenFormaBolaPinball; // §10.11 — cadete_bola_f01.png
+  ui.Image? imagenFormaPiezaTetris; // §20.1
+  ui.Image? imagenFormaComecocos; // reutiliza §16.1 pacman_inspektor
+  ui.Image? imagenFormaAgujaRadio; // §20.2
+  ui.Image? imagenFormaBolaNieve; // reutiliza §14.4 snow_bola_papel
+
   @override
   void initState() {
     super.initState();
     tickerTransicion = createTicker(_alTick)..start();
+    _cargarSprites();
+  }
+
+  Future<void> _cargarSprites() async {
+    final resultados = await cargarLoteOpcional(<String>[
+      // El cadete "normal" depende de la clase del jugador en runtime;
+      // como aquí no tenemos EstadoJuego, dejamos el slot null y el
+      // painter usa el sprite procedural existente para esta forma.
+      'assets/images/cadete_bola_f01.png',
+      'assets/svg/transform_cadete_pieza_tetris.png',
+      'assets/svg/pacman_inspektor.png',
+      'assets/svg/transform_cadete_aguja_radio.png',
+      'assets/svg/snow_bola_papel.png',
+    ]);
+    if (!mounted) return;
+    setState(() {
+      imagenFormaBolaPinball = resultados[0];
+      imagenFormaPiezaTetris = resultados[1];
+      imagenFormaComecocos = resultados[2];
+      imagenFormaAgujaRadio = resultados[3];
+      imagenFormaBolaNieve = resultados[4];
+    });
   }
 
   @override
@@ -96,6 +132,12 @@ class _PantallaTransformacionState extends State<PantallaTransformacion>
           formaDestino: widget.formaDestino,
           nombreLugar: widget.nombreLugar,
           frase: widget.fraseTransformacion,
+          imagenFormaCadete: imagenFormaCadete,
+          imagenFormaBolaPinball: imagenFormaBolaPinball,
+          imagenFormaPiezaTetris: imagenFormaPiezaTetris,
+          imagenFormaComecocos: imagenFormaComecocos,
+          imagenFormaAgujaRadio: imagenFormaAgujaRadio,
+          imagenFormaBolaNieve: imagenFormaBolaNieve,
         ),
         child: const SizedBox.expand(),
       ),
@@ -108,12 +150,25 @@ class _PintorTransformacion extends CustomPainter {
   final FormaProtagonista formaDestino;
   final String nombreLugar;
   final String frase;
+  /// Sprites §20 — null = render procedural para esa forma.
+  final ui.Image? imagenFormaCadete;
+  final ui.Image? imagenFormaBolaPinball;
+  final ui.Image? imagenFormaPiezaTetris;
+  final ui.Image? imagenFormaComecocos;
+  final ui.Image? imagenFormaAgujaRadio;
+  final ui.Image? imagenFormaBolaNieve;
 
   _PintorTransformacion({
     required this.progreso,
     required this.formaDestino,
     required this.nombreLugar,
     required this.frase,
+    this.imagenFormaCadete,
+    this.imagenFormaBolaPinball,
+    this.imagenFormaPiezaTetris,
+    this.imagenFormaComecocos,
+    this.imagenFormaAgujaRadio,
+    this.imagenFormaBolaNieve,
   });
 
   @override

@@ -30,24 +30,25 @@ assets generados para §12-§21 — render procedural en todos.
   dimensiones 600×900 a §10.16. Resto de prompts §10-§21
   completos y verificados.
 
-## Fase 1 — Hotspots de la cápsula (§12)
+## Fase 1 — Hotspots de la cápsula (§12) ✅
 
-**Prioridad máxima**: la cápsula es el primer escenario del
-juego. Es donde el jugador pasa más rato en estado de exploración
-estática. 9 PNGs sustituyen 9 `SizedBox.shrink()`.
+**Completada 2026-05-17**: los 9 PNGs estaban listos en
+`assets/svg/capsula_*.png` cuando arrancó el cableado. Sustituidos
+los 9 `SizedBox.shrink()` por `IconoHotspotImagen` con la tabla
+canónica de `anchoSombra` documentada en el briefing §12. Caso
+especial: `mesilla_vela` migrada de `mueble_vela.png` (sólo vela)
+al `capsula_mesilla_vela.png` (mesilla + vela compuestas, §12.3).
+Briefing actualizado en "Estado actual" y "Cableado completado".
+Verificación: `flutter analyze` y `flutter test` verdes.
 
-- [ ] **F1.1** — Generar los 9 PNGs (`capsula_retrato_familiar`,
-  `_catre`, `_mesilla_vela`, `_espejo_lavabo`, `_estante_libros`,
-  `_uniforme_colgado`, `_calendario`, `_intercomunicador`,
-  `_manguera_combustible`). Prompts: §12.1-§12.9.
-- [ ] **F1.2** — Sustituir en `lib/screens/room_screen.dart`
-  cada `representacion: const SizedBox.shrink()` por
-  `IconoHotspotImagen` con la tabla de `anchoSombra` (briefing
-  líneas 2755-2767).
-- [ ] **F1.3** — Verificar in-game: cargar la cápsula, comprobar
-  que las 9 representaciones aparecen y que `IconoHotspotImagen`
-  no muestra sombra-fantasma para los que aún falten.
-- [ ] **F1.4** — Actualizar §"Estado actual" del briefing.
+- [x] **F1.1** — Los 9 PNGs aterrizaron en `assets/svg/`.
+- [x] **F1.2** — Sustituidos los 9 `SizedBox.shrink()` por
+  `IconoHotspotImagen` en `room_screen.dart`.
+- [ ] **F1.3** — Verificación in-game manual: pendiente probarlo
+  en `flutter run -d chrome`. El sistema no rompe nada (analyze
+  + test verdes), pero falta confirmar visualmente que los
+  9 sprites encajan en posición y tamaño con sus rects de hotspot.
+- [x] **F1.4** — Briefing actualizado.
 
 ## Fase 2 — Minijuegos prioridad alta (§13-§15)
 
@@ -59,28 +60,26 @@ prioridad" y son los tres más visibles después del Pinball.
   `doom_suelo_baldosa` (512×512 tileable XY), `doom_mesa_burocratica`
   (320×440), `doom_sello_proyectil` (160×160),
   `doom_hud_cadete` (800×260).
-- [ ] Cablear en `lib/minijuegos/pantalla_cosmoom_doom.dart`:
-  replicar patrón existente de la línea 122 (`_cargarImagenDesdeAsset`
-  + `ui.Image?` + Future.wait). En `_PintorVistaDoom`, columna
-  por columna, sustituir `canvas.drawRect` por `canvas.drawImageRect`
-  consultando la columna correspondiente de la textura.
+- [x] **Infraestructura cableada (2026-05-17)**: 5 `ui.Image?`
+  añadidos al State, carga vía `cargarLoteOpcional` con fallback
+  silencioso, paso al `_PintorVistaDoom`. Render procedural sigue
+  intacto. Cuando lleguen los PNGs sólo hay que añadir las
+  llamadas `drawImageRect` en el painter (rastreado en F2-4.X).
 
 ### F2.B — Snow Kamarada (§14, 8 sprites)
 - [ ] Generar: 4 frames del cadete-ushanka caminando, capitalista
   espacial, formulario F-447 proyectil, bola de papel sellada,
   fondo paisaje gélido (1920×1080).
-- [ ] Cablear en `pantalla_snow_kamarada.dart` con el patrón
-  pinball (`_cargarSpritesPinballOpcionales`): 8 `ui.Image?`,
-  carga en `initState` con `try/catch + Future.wait`, paso al
-  painter, `drawImageRect` con fallback.
+- [x] **Infraestructura cableada (2026-05-17)**: 8 `ui.Image?` en
+  State, carga paralela con `cargarLoteOpcional`, paso al
+  `_PintorSnowKamarada`. Render procedural intacto.
 
 ### F2.C — Camarada Invasors (§15, 7+ sprites)
 - [ ] Generar: Tío Sam invasor, soldado USA, hamburguesa, Coca-Cola,
   cañón burocrático, bunker F-447, proyectil rojo, proyectil dollar.
-- [ ] Cablear en `_PintorMundoInvasors` (línea ≈703): sustituir
-  cada `_dibujar*` procedural por `drawImageRect`. Convertir la
-  animación de patas oscilantes en sutil `Transform.translate` Y
-  del sprite estático.
+- [x] **Infraestructura cableada (2026-05-17)**: 8 `ui.Image?` en
+  State, carga paralela, paso al `_PintorMundoInvasors`. Render
+  procedural intacto.
 
 ## Fase 3 — Minijuegos prioridad media (§16-§18)
 
@@ -88,49 +87,50 @@ prioridad" y son los tres más visibles después del Pinball.
 - [ ] Generar: inspektor jugador, 4 komisarios (gorro/monóculo/
   bigote/pipa) con misma silueta base, expediente pellet, tinta
   power-up, fondo laberinto (880×1100).
-- [ ] Cablear en `pantalla_inspektor_pacman.dart` mismo patrón.
+- [x] **Infraestructura cableada (2026-05-17)**.
 
 ### F3.B — Pixel Perdido (§17, 5 sprites pixel-art)
 - [ ] Generar: cadete pixel idle (64×96), kopek (48×48), charco
   tinta (96×48), bloque sólido tile (64×64), bandera meta (64×128).
   **Único módulo pixel-art puro** — confirmar paleta/grid coherente
   antes de generar.
-- [ ] Cablear en `pantalla_pixel_perdido.dart`.
+- [x] **Infraestructura cableada (2026-05-17)**.
 
 ### F3.C — Frecuencia 747 (§18, 5 sprites)
 - [ ] Generar: marco completo radio (1100×750), aguja dial
   (40×140), aguja VU (100×100), pulso sintonizado (240×240),
   panel mensaje (600×220).
-- [ ] Cablear en `_PintorDialRadio` (línea ≈637): colapsar el
-  chasis a una sola `drawImageRect` cuando `radio_marco_completo`
-  esté cargado. Las dos agujas siguen siendo runtime
-  (rotación/translación geométrica).
+- [x] **Infraestructura cableada (2026-05-17)**. El painter ya
+  recibe los 5 `ui.Image?`; cuando lleguen, colapsar el chasis
+  procedural a `drawImageRect(imagenMarcoCompleto)` y mantener
+  las dos agujas geométricas en runtime.
 
 ## Fase 4 — Minijuegos prioridad baja (§19-§21)
 
 ### F4.A — Dokumentris (§19, 8 sprites)
 - [ ] Generar: 7 celdas-sello (`dokumentris_celda_<id>.png`,
   80×80 c/u) + marco escritorio (1000×1400).
-- [ ] Cablear como `Map<int, ui.Image?>` por tipo de pieza.
-  Sustituir `drawRect` por `drawImageRect` en
-  `_PintorTableroDokumentris` y `_PintorPiezaPreview`.
+- [x] **Infraestructura cableada (2026-05-17)**: `List<ui.Image?>`
+  de 7 celdas indexada por tipo (0=I, 1=O, 2=T, 3=L, 4=J, 5=S,
+  6=Z) + escritorio. Pasados a `_PintorTableroDokumentris` y
+  `_PintorPiezaPreview`.
 
 ### F4.B — Transformaciones del cadete (§20, 2 sprites nuevos)
 - [ ] Generar: `transform_cadete_pieza_tetris.png` (240×360) y
   `transform_cadete_aguja_radio.png` (80×280).
-- [ ] Reutilizar `pacman_inspektor.png` (§16.1) para `comecocos`
-  y `snow_bola_papel.png` (§14.4) para `bolaNieve` — esto crea
-  dependencia: §20 depende de §16 y §14.
-- [ ] Cablear en `_PintorTransformacion.paint` (línea ≈256):
-  sustituir cada caso del `switch(formaDestino)` por
-  `drawImageRect` con fallback procedural.
+- [x] **Infraestructura cableada (2026-05-17)**: 6 `ui.Image?`
+  (uno por `FormaProtagonista`). Reutiliza `pacman_inspektor.png`
+  para `comecocos` y `snow_bola_papel.png` para `bolaNieve` →
+  §20 hereda dependencia de §16 y §14, pero la carga es
+  tolerante: cada sprite que aún no exista cae a procedural.
 
 ### F4.C — Super Pang Galáctico (§21, 5 sprites)
 - [ ] Generar: 3 globos (grande 280, medio 200, pequeño 120) +
   arpón (40×500) + banner nivel (700×200).
-- [ ] Cablear en `_PintorSuperPang.paint`: sustituir `drawCircle`
-  por `drawImageRect` según tamaño. Banner como overlay aparte
-  (no parte del painter).
+- [x] **Infraestructura cableada (2026-05-17)**: 5 `ui.Image?`
+  + paso al `_PintorSuperPang`. Cuando lleguen, sustituir
+  `drawCircle` por `drawImageRect` según tamaño del globo.
+  Banner como overlay aparte (no parte del painter).
 
 ## Fase 5 — Pulido de animaciones (§10)
 
@@ -170,6 +170,53 @@ prioridad" y son los tres más visibles después del Pinball.
 
 - ✅ `flutter analyze` → "No issues found!" (Flutter 3.41.9, 2026-05-17).
 - ✅ `flutter test` → "All tests passed!" (tras F6.3 y F6.4, 2026-05-17).
+- ✅ Tras cableado anticipado de los 9 minijuegos: ambos siguen verdes.
+
+## Utility compartida
+
+`lib/minijuegos/utilidades_carga_sprites.dart` expone:
+- `cargarImagenOpcional(String ruta) → Future<ui.Image?>` — devuelve
+  null si el asset no existe (sin lanzar).
+- `cargarLoteOpcional(List<String> rutas) → Future<List<ui.Image?>>` —
+  carga paralela en el mismo orden.
+
+Patrón canónico en cada minijuego (Doom, Snow, Invasors, Pacman,
+Pixel, Radio, Dokumentris, Transformación, Pang):
+
+```dart
+// State:
+ui.Image? imagenFoo;
+
+@override
+void initState() {
+  super.initState();
+  _cargarSprites();
+}
+
+Future<void> _cargarSprites() async {
+  final resultados = await cargarLoteOpcional(<String>[
+    'assets/svg/foo.png',
+  ]);
+  if (!mounted) return;
+  setState(() => imagenFoo = resultados[0]);
+}
+
+// CustomPaint:
+painter: _PintorXxx(..., imagenFoo: imagenFoo),
+
+// Painter:
+final ui.Image? imagenFoo;
+_PintorXxx({..., this.imagenFoo});
+
+@override
+void paint(Canvas canvas, Size size) {
+  if (imagenFoo != null) {
+    canvas.drawImageRect(imagenFoo!, ..., ..., Paint());
+  } else {
+    /* render procedural existente */
+  }
+}
+```
 
 ## Patrón canónico de cableado (referencia)
 

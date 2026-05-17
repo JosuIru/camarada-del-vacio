@@ -573,7 +573,10 @@ class _PantallaSalaState extends State<PantallaSala>
               anchoRelativo: 0.04,
               altoRelativo: 0.08,
               radioInteraccion: 0.07,
-              representacion: const SizedBox.shrink(),
+              representacion: const IconoHotspotImagen(
+                rutaAsset: 'assets/svg/capsula_manguera_combustible.png',
+                anchoSombra: 40,
+              ),
               onInteractuar: _interactuarMangueraCombustible,
             ),
             HotspotEscenario(
@@ -623,7 +626,10 @@ class _PantallaSalaState extends State<PantallaSala>
               anchoRelativo: 0.05,
               altoRelativo: 0.12,
               radioInteraccion: 0.08,
-              representacion: const SizedBox.shrink(),
+              representacion: const IconoHotspotImagen(
+                rutaAsset: 'assets/svg/capsula_retrato_familiar.png',
+                anchoSombra: 20,
+              ),
               onInteractuar: _interactuarRetratoFamiliar,
             ),
             HotspotEscenario(
@@ -632,7 +638,10 @@ class _PantallaSalaState extends State<PantallaSala>
               anchoRelativo: 0.10,
               altoRelativo: 0.14,
               radioInteraccion: 0.08,
-              representacion: const SizedBox.shrink(),
+              representacion: const IconoHotspotImagen(
+                rutaAsset: 'assets/svg/capsula_catre.png',
+                anchoSombra: 56,
+              ),
               onInteractuar: _interactuarCatre,
             ),
             HotspotEscenario(
@@ -653,9 +662,11 @@ class _PantallaSalaState extends State<PantallaSala>
               anchoRelativo: 0.04,
               altoRelativo: 0.18,
               radioInteraccion: 0.07,
+              // §12.3: el sprite nuevo incluye mesilla + vela en uno;
+              // sustituye al `mueble_vela.png` anterior (sólo vela).
               representacion: const IconoHotspotImagen(
-                rutaAsset: 'assets/svg/mueble_vela.png',
-                anchoSombra: 24,
+                rutaAsset: 'assets/svg/capsula_mesilla_vela.png',
+                anchoSombra: 32,
               ),
               onInteractuar: _interactuarMesillaVela,
             ),
@@ -667,7 +678,10 @@ class _PantallaSalaState extends State<PantallaSala>
               anchoRelativo: 0.06,
               altoRelativo: 0.22,
               radioInteraccion: 0.08,
-              representacion: const SizedBox.shrink(),
+              representacion: const IconoHotspotImagen(
+                rutaAsset: 'assets/svg/capsula_espejo_lavabo.png',
+                anchoSombra: 32,
+              ),
               onInteractuar: _interactuarEspejoLavabo,
             ),
             HotspotEscenario(
@@ -676,7 +690,10 @@ class _PantallaSalaState extends State<PantallaSala>
               anchoRelativo: 0.07,
               altoRelativo: 0.13,
               radioInteraccion: 0.08,
-              representacion: const SizedBox.shrink(),
+              representacion: const IconoHotspotImagen(
+                rutaAsset: 'assets/svg/capsula_estante_libros.png',
+                anchoSombra: 36,
+              ),
               onInteractuar: _interactuarEstanteLibros,
             ),
             HotspotEscenario(
@@ -685,7 +702,10 @@ class _PantallaSalaState extends State<PantallaSala>
               anchoRelativo: 0.06,
               altoRelativo: 0.22,
               radioInteraccion: 0.08,
-              representacion: const SizedBox.shrink(),
+              representacion: const IconoHotspotImagen(
+                rutaAsset: 'assets/svg/capsula_uniforme_colgado.png',
+                anchoSombra: 20,
+              ),
               onInteractuar: _interactuarUniformeColgado,
             ),
 
@@ -696,7 +716,10 @@ class _PantallaSalaState extends State<PantallaSala>
               anchoRelativo: 0.05,
               altoRelativo: 0.14,
               radioInteraccion: 0.08,
-              representacion: const SizedBox.shrink(),
+              representacion: const IconoHotspotImagen(
+                rutaAsset: 'assets/svg/capsula_calendario.png',
+                anchoSombra: 20,
+              ),
               onInteractuar: _interactuarCalendario,
             ),
             HotspotEscenario(
@@ -784,7 +807,10 @@ class _PantallaSalaState extends State<PantallaSala>
               anchoRelativo: 0.05,
               altoRelativo: 0.12,
               radioInteraccion: 0.08,
-              representacion: const SizedBox.shrink(),
+              representacion: const IconoHotspotImagen(
+                rutaAsset: 'assets/svg/capsula_intercomunicador.png',
+                anchoSombra: 20,
+              ),
               onInteractuar: _interactuarIntercomunicador,
             ),
             // Sarcófago del Inquilino #4 (cosmonauta congelado desde la

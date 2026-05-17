@@ -1,10 +1,12 @@
 import 'dart:math' as math;
+import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import '../models/game_state.dart';
 import '../widgets/propaganda_button.dart';
 import 'pintor_rotulador.dart';
+import 'utilidades_carga_sprites.dart';
 import 'widget_pausa.dart';
 import '../widgets/breathing_stick_figure.dart';
 import '../painters/stick_figure_painter.dart';
@@ -78,11 +80,37 @@ class _PantallaSuperPangGalacticoState extends State<PantallaSuperPangGalactico>
   final FocusNode nodoFoco =
       FocusNode(debugLabel: 'super_pang_galactico');
 
+  // Sprites de §21 — cableado anticipado.
+  ui.Image? imagenGloboGrande; // §21.1 (280×280)
+  ui.Image? imagenGloboMedio; // §21.1 (200×200)
+  ui.Image? imagenGloboPequeno; // §21.1 (120×120)
+  ui.Image? imagenArpon; // §21.2
+  ui.Image? imagenBannerNivel; // §21.3
+
   @override
   void initState() {
     super.initState();
     _generarNivel();
     tickerJuego = createTicker(_alTick)..start();
+    _cargarSprites();
+  }
+
+  Future<void> _cargarSprites() async {
+    final resultados = await cargarLoteOpcional(<String>[
+      'assets/svg/pang_globo_grande.png',
+      'assets/svg/pang_globo_medio.png',
+      'assets/svg/pang_globo_pequeno.png',
+      'assets/svg/pang_arpon.png',
+      'assets/svg/pang_banner_nivel.png',
+    ]);
+    if (!mounted) return;
+    setState(() {
+      imagenGloboGrande = resultados[0];
+      imagenGloboMedio = resultados[1];
+      imagenGloboPequeno = resultados[2];
+      imagenArpon = resultados[3];
+      imagenBannerNivel = resultados[4];
+    });
   }
 
   @override
@@ -470,6 +498,11 @@ class _PantallaSuperPangGalacticoState extends State<PantallaSuperPangGalactico>
                                     globos: List<_GloboBurocratico>.from(
                                         globos),
                                     bannerNivel: bannerNivel,
+                                    imagenGloboGrande: imagenGloboGrande,
+                                    imagenGloboMedio: imagenGloboMedio,
+                                    imagenGloboPequeno: imagenGloboPequeno,
+                                    imagenArpon: imagenArpon,
+                                    imagenBannerNivel: imagenBannerNivel,
                                   ),
                                 ),
                               ),
@@ -654,6 +687,12 @@ class _PintorSuperPang extends CustomPainter {
   final double cuerdaTopY;
   final List<_GloboBurocratico> globos;
   final String? bannerNivel;
+  /// Sprites §21 — null = render procedural para ese elemento.
+  final ui.Image? imagenGloboGrande;
+  final ui.Image? imagenGloboMedio;
+  final ui.Image? imagenGloboPequeno;
+  final ui.Image? imagenArpon;
+  final ui.Image? imagenBannerNivel;
 
   _PintorSuperPang({
     required this.cuerdaActiva,
@@ -661,6 +700,11 @@ class _PintorSuperPang extends CustomPainter {
     required this.cuerdaTopY,
     required this.globos,
     required this.bannerNivel,
+    this.imagenGloboGrande,
+    this.imagenGloboMedio,
+    this.imagenGloboPequeno,
+    this.imagenArpon,
+    this.imagenBannerNivel,
   });
 
   @override
