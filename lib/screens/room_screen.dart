@@ -626,10 +626,10 @@ class _PantallaSalaState extends State<PantallaSala>
               anchoRelativo: 0.05,
               altoRelativo: 0.12,
               radioInteraccion: 0.08,
-              representacion: const IconoHotspotImagen(
-                rutaAsset: 'assets/svg/capsula_retrato_familiar.png',
-                anchoSombra: 20,
-              ),
+              // Ya está pintado en fondo_capsula.png. El PNG de §12.1
+              // queda generado y disponible — se cableará cuando se
+              // regenere el fondo "limpio" (sólo arquitectura).
+              representacion: const SizedBox.shrink(),
               onInteractuar: _interactuarRetratoFamiliar,
             ),
             HotspotEscenario(
@@ -678,10 +678,8 @@ class _PantallaSalaState extends State<PantallaSala>
               anchoRelativo: 0.06,
               altoRelativo: 0.22,
               radioInteraccion: 0.08,
-              representacion: const IconoHotspotImagen(
-                rutaAsset: 'assets/svg/capsula_espejo_lavabo.png',
-                anchoSombra: 32,
-              ),
+              // Ya está pintado en fondo_capsula.png. PNG §12.4 generado.
+              representacion: const SizedBox.shrink(),
               onInteractuar: _interactuarEspejoLavabo,
             ),
             HotspotEscenario(
@@ -690,10 +688,8 @@ class _PantallaSalaState extends State<PantallaSala>
               anchoRelativo: 0.07,
               altoRelativo: 0.13,
               radioInteraccion: 0.08,
-              representacion: const IconoHotspotImagen(
-                rutaAsset: 'assets/svg/capsula_estante_libros.png',
-                anchoSombra: 36,
-              ),
+              // Ya está pintado en fondo_capsula.png. PNG §12.5 generado.
+              representacion: const SizedBox.shrink(),
               onInteractuar: _interactuarEstanteLibros,
             ),
             HotspotEscenario(
@@ -702,10 +698,8 @@ class _PantallaSalaState extends State<PantallaSala>
               anchoRelativo: 0.06,
               altoRelativo: 0.22,
               radioInteraccion: 0.08,
-              representacion: const IconoHotspotImagen(
-                rutaAsset: 'assets/svg/capsula_uniforme_colgado.png',
-                anchoSombra: 20,
-              ),
+              // Ya está pintado en fondo_capsula.png. PNG §12.6 generado.
+              representacion: const SizedBox.shrink(),
               onInteractuar: _interactuarUniformeColgado,
             ),
 
@@ -716,10 +710,8 @@ class _PantallaSalaState extends State<PantallaSala>
               anchoRelativo: 0.05,
               altoRelativo: 0.14,
               radioInteraccion: 0.08,
-              representacion: const IconoHotspotImagen(
-                rutaAsset: 'assets/svg/capsula_calendario.png',
-                anchoSombra: 20,
-              ),
+              // Ya está pintado en fondo_capsula.png. PNG §12.7 generado.
+              representacion: const SizedBox.shrink(),
               onInteractuar: _interactuarCalendario,
             ),
             HotspotEscenario(
@@ -807,10 +799,8 @@ class _PantallaSalaState extends State<PantallaSala>
               anchoRelativo: 0.05,
               altoRelativo: 0.12,
               radioInteraccion: 0.08,
-              representacion: const IconoHotspotImagen(
-                rutaAsset: 'assets/svg/capsula_intercomunicador.png',
-                anchoSombra: 20,
-              ),
+              // Ya está pintado en fondo_capsula.png. PNG §12.8 generado.
+              representacion: const SizedBox.shrink(),
               onInteractuar: _interactuarIntercomunicador,
             ),
             // Sarcófago del Inquilino #4 (cosmonauta congelado desde la

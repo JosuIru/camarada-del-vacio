@@ -1900,12 +1900,18 @@ en `_PintorVistaDoom`:
 Fallback procedural intacto en todos los casos: si el asset
 desapareciera, el pintor vuelve al render geométrico anterior.
 
-✅ **Hecho — Hotspots de la cápsula (§12)** (auditoría 2026-05-17):
-los 9 hotspots invisibles tienen ya su sprite dedicado en
-`assets/svg/capsula_*.png` y están cableados con `IconoHotspotImagen`
-en `room_screen.dart`. Cubre: retrato familiar, catre, mesilla con
-vela, espejo y lavabo, estante de libros, uniforme colgado,
-calendario, intercomunicador, manguera de combustible.
+🟡 **Parcial — Hotspots de la cápsula (§12)** (auditoría 2026-05-18):
+los 9 PNGs §12.1-§12.9 están generados en `assets/svg/`. Sin embargo,
+el `fondo_capsula.png` actual ya tenía dibujados 6 de esos muebles
+(retrato familiar, calendario, espejo/lavabo, uniforme colgado,
+estante, intercomunicador) → cablear los 9 producía duplicación
+visible en juego. Mitigación aplicada: los 6 duplicados vuelven a
+`SizedBox.shrink()` en `room_screen.dart`; los 3 que NO están en
+el fondo siguen cableados con `IconoHotspotImagen` (catre,
+mesilla_vela, manguera_combustible). El cableado completo de los
+9 queda en espera de regenerar `fondo_capsula.png` "limpio" (sólo
+arquitectura: paredes, suelo, techo, lámparas, compuerta, ojo de
+buey, tuberías; sin muebles).
 
 ✅ **Hecho — Inspector Central**:
 - `assets/svg/inspector_central.svg`: cableado en

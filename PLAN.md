@@ -30,25 +30,26 @@ assets generados para §12-§21 — render procedural en todos.
   dimensiones 600×900 a §10.16. Resto de prompts §10-§21
   completos y verificados.
 
-## Fase 1 — Hotspots de la cápsula (§12) ✅
+## Fase 1 — Hotspots de la cápsula (§12) 🟡 parcial
 
-**Completada 2026-05-17**: los 9 PNGs estaban listos en
-`assets/svg/capsula_*.png` cuando arrancó el cableado. Sustituidos
-los 9 `SizedBox.shrink()` por `IconoHotspotImagen` con la tabla
-canónica de `anchoSombra` documentada en el briefing §12. Caso
-especial: `mesilla_vela` migrada de `mueble_vela.png` (sólo vela)
-al `capsula_mesilla_vela.png` (mesilla + vela compuestas, §12.3).
-Briefing actualizado en "Estado actual" y "Cableado completado".
-Verificación: `flutter analyze` y `flutter test` verdes.
+**Estado 2026-05-18**: cableado parcial. Verificación visual con
+`flutter run -d chrome` reveló que `fondo_capsula.png` ya tenía
+dibujados 6 de los 9 muebles → duplicación. Revertidos esos 6 a
+`SizedBox.shrink()`; mantenidos los 3 que NO están en el fondo:
+`catre`, `mesilla_vela`, `manguera_combustible`.
 
-- [x] **F1.1** — Los 9 PNGs aterrizaron en `assets/svg/`.
-- [x] **F1.2** — Sustituidos los 9 `SizedBox.shrink()` por
-  `IconoHotspotImagen` en `room_screen.dart`.
-- [ ] **F1.3** — Verificación in-game manual: pendiente probarlo
-  en `flutter run -d chrome`. El sistema no rompe nada (analyze
-  + test verdes), pero falta confirmar visualmente que los
-  9 sprites encajan en posición y tamaño con sus rects de hotspot.
-- [x] **F1.4** — Briefing actualizado.
+- [x] **F1.1** — Los 9 PNGs §12.1-§12.9 aterrizaron en `assets/svg/`.
+- [🟡] **F1.2** — Sustituidos sólo 3 `SizedBox.shrink()` por
+  `IconoHotspotImagen`. Los otros 6 quedan SizedBox.shrink() con
+  comentario explicando la decisión. PNGs siguen disponibles en disco.
+- [x] **F1.3** — Verificación in-game confirmada: con la mitigación
+  ya no hay duplicación visual. `mesilla_vela` también migrada de
+  `mueble_vela.png` (sólo vela) al `capsula_mesilla_vela.png` §12.3.
+- [x] **F1.4** — Briefing actualizado a "🟡 Parcial" con la nota
+  del problema y la mitigación.
+- [ ] **F1.5** — Cuando regeneres `fondo_capsula.png` SIN muebles
+  (solo arquitectura), revertir los 6 hotspots a IconoHotspotImagen
+  para tener cableado completo y flexibilidad total.
 
 ## Fase 2 — Minijuegos prioridad alta (§13-§15)
 
