@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 360" preserveAspectRatio="xMidYMid meet">
+  <!-- ============================================================
+       INSPECTOR CENTRAL DEL COMITÉ
+       Estilo West of Loathing × cosmo-soviético: stick figure muy
+       expresivo, B/N + rojo. Silueta reconocible por: capote
+       larguísimo arrastrando, casco de cosmonauta enorme con visor
+       rojo, portafolios de cuero con sellos colgantes, bigote
+       reglamentario y mirada de inspección perpetua.
+       ============================================================ -->
+
+  <!-- Sombra elíptica bajo los pies -->
+  <ellipse cx="120" cy="350" rx="60" ry="10" fill="#15110D" fill-opacity="0.35"/>
+
+  <!-- ========== CAPOTE (capa atrás) ========== -->
+  <!-- Falda larga del capote que toca el suelo -->
+  <path d="M 60 340 Q 50 300 60 220 L 100 180 L 140 180 L 180 220 Q 190 300 180 340 Z"
+        fill="#F2EDE0" stroke="#15110D" stroke-width="2.5"
+        stroke-linejoin="round" stroke-linecap="round"/>
+  <!-- Pliegues verticales del capote (rayado paralelo) -->
+  <line x1="85" y1="220" x2="80" y2="335" stroke="#5A4F3F" stroke-width="1" opacity="0.55"/>
+  <line x1="105" y1="220" x2="103" y2="335" stroke="#5A4F3F" stroke-width="1" opacity="0.55"/>
+  <line x1="135" y1="220" x2="137" y2="335" stroke="#5A4F3F" stroke-width="1" opacity="0.55"/>
+  <line x1="155" y1="220" x2="160" y2="335" stroke="#5A4F3F" stroke-width="1" opacity="0.55"/>
+  <!-- Borde inferior tembloroso -->
+  <path d="M 62 338 Q 80 342 100 339 Q 120 343 140 338 Q 160 341 178 339"
+        fill="none" stroke="#15110D" stroke-width="2"
+        stroke-linejoin="round" stroke-linecap="round"/>
+
+  <!-- ========== PIERNAS ========== -->
+  <line x1="105" y1="270" x2="100" y2="335" stroke="#15110D"
+        stroke-width="4" stroke-linecap="round"/>
+  <line x1="135" y1="270" x2="140" y2="335" stroke="#15110D"
+        stroke-width="4" stroke-linecap="round"/>
+  <!-- Botas reglamentarias -->
+  <rect x="86" y="328" width="28" height="12" fill="#15110D"/>
+  <rect x="126" y="328" width="28" height="12" fill="#15110D"/>
+
+  <!-- ========== TORSO + CINTURÓN ========== -->
+  <line x1="120" y1="135" x2="120" y2="270" stroke="#15110D"
+        stroke-width="4" stroke-linecap="round"/>
+  <!-- Botones rojos del capote, fila central -->
+  <circle cx="120" cy="160" r="4" fill="#C8102E" stroke="#15110D" stroke-width="1"/>
+  <circle cx="120" cy="185" r="4" fill="#C8102E" stroke="#15110D" stroke-width="1"/>
+  <circle cx="120" cy="210" r="4" fill="#C8102E" stroke="#15110D" stroke-width="1"/>
+  <circle cx="120" cy="235" r="4" fill="#C8102E" stroke="#15110D" stroke-width="1"/>
+  <!-- Cinturón con hebilla -->
+  <rect x="92" y="245" width="56" height="8" fill="#15110D"/>
+  <rect x="115" y="244" width="10" height="10" fill="#C8102E" stroke="#F2EDE0" stroke-width="1"/>
+
+  <!-- ========== BRAZO IZQUIERDO (sostiene portafolios) ========== -->
+  <line x1="100" y1="145" x2="78" y2="200" stroke="#15110D"
+        stroke-width="4" stroke-linecap="round"/>
+  <line x1="78" y1="200" x2="68" y2="255" stroke="#15110D"
+        stroke-width="4" stroke-linecap="round"/>
+  <!-- Mano izquierda agarrando el asa -->
+  <circle cx="68" cy="255" r="5" fill="#F2EDE0" stroke="#15110D" stroke-width="2"/>
+
+  <!-- PORTAFOLIOS DE CUERO COLGANDO de la mano izquierda -->
+  <rect x="50" y="255" width="38" height="48" fill="#5A4F3F" stroke="#15110D" stroke-width="2.5"/>
+  <!-- Asa metálica -->
+  <path d="M 60 255 Q 60 248 68 248 Q 76 248 76 255" fill="none"
+        stroke="#15110D" stroke-width="2"/>
+  <!-- Hebilla -->
+  <rect x="62" y="277" width="14" height="4" fill="#C8102E"/>
+  <!-- Sello rojo colgando del portafolios con cordón -->
+  <line x1="58" y1="303" x2="55" y2="318" stroke="#15110D" stroke-width="1"/>
+  <circle cx="55" cy="322" r="8" fill="#C8102E" stroke="#15110D" stroke-width="1.5"/>
+  <text x="55" y="326" font-family="serif" font-style="italic"
+        font-weight="900" font-size="9" fill="#F2EDE0"
+        text-anchor="middle">F</text>
+  <!-- Etiqueta del portafolios -->
+  <rect x="55" y="262" width="28" height="10" fill="#F2EDE0" stroke="#15110D" stroke-width="1"/>
+  <text x="69" y="270" font-family="monospace" font-weight="bold"
+        font-size="7" fill="#15110D" text-anchor="middle">F-447</text>
+
+  <!-- ========== BRAZO DERECHO (apuntando con dedo acusador) ========== -->
+  <line x1="140" y1="145" x2="170" y2="170" stroke="#15110D"
+        stroke-width="4" stroke-linecap="round"/>
+  <line x1="170" y1="170" x2="208" y2="155" stroke="#15110D"
+        stroke-width="4" stroke-linecap="round"/>
+  <!-- Mano derecha cerrada + dedo índice apuntando -->
+  <circle cx="208" cy="155" r="6" fill="#F2EDE0" stroke="#15110D" stroke-width="2"/>
+  <line x1="208" y1="155" x2="225" y2="148" stroke="#15110D"
+        stroke-width="3" stroke-linecap="round"/>
+
+  <!-- ========== CASCO DE COSMONAUTA ENORME ========== -->
+  <!-- Cuello / aro inferior del casco -->
+  <rect x="100" y="128" width="40" height="6" fill="#15110D"/>
+  <rect x="103" y="135" width="34" height="3" fill="#5A4F3F"/>
+  <!-- Esfera del casco (relleno papel + borde grueso) -->
+  <circle cx="120" cy="90" r="48" fill="#F2EDE0" stroke="#15110D"
+          stroke-width="3.5"/>
+  <!-- Visor frontal: arco oscuro arriba -->
+  <path d="M 80 78 Q 120 62 160 78" fill="none" stroke="#15110D"
+        stroke-width="3" stroke-linecap="round"/>
+  <!-- Reflejo de cristal -->
+  <path d="M 92 70 Q 100 55 118 56" fill="none" stroke="#F2EDE0"
+        stroke-width="2" opacity="0.6" stroke-linecap="round"/>
+  <!-- Estrella roja grande en la frente del casco -->
+  <polygon points="120,42 124,55 138,55 127,63 131,76 120,69 109,76 113,63 102,55 116,55"
+           fill="#C8102E" stroke="#15110D" stroke-width="1.2"/>
+  <!-- Antena con bolita roja -->
+  <line x1="92" y1="48" x2="78" y2="22" stroke="#15110D"
+        stroke-width="2.5" stroke-linecap="round"/>
+  <circle cx="78" cy="20" r="5" fill="#C8102E" stroke="#15110D"
+          stroke-width="1.2"/>
+  <!-- Pequeño tubo del lateral derecho del casco -->
+  <line x1="160" y1="100" x2="172" y2="118" stroke="#15110D"
+        stroke-width="2.5" stroke-linecap="round"/>
+  <circle cx="172" cy="118" r="3" fill="#5A4F3F"/>
+
+  <!-- ========== CARA DENTRO DEL CASCO ========== -->
+  <!-- Ojos pequeños y juntos (mirada de inspección) -->
+  <circle cx="111" cy="95" r="2.5" fill="#15110D"/>
+  <circle cx="129" cy="95" r="2.5" fill="#15110D"/>
+  <!-- Cejas fruncidas -->
+  <line x1="103" y1="88" x2="117" y2="91" stroke="#15110D"
+        stroke-width="2" stroke-linecap="round"/>
+  <line x1="123" y1="91" x2="137" y2="88" stroke="#15110D"
+        stroke-width="2" stroke-linecap="round"/>
+  <!-- Bigote reglamentario (gran, simétrico, soviético) -->
+  <path d="M 100 106 Q 110 109 120 107 Q 130 109 140 106
+           Q 138 114 130 113 Q 125 116 120 113 Q 115 116 110 113
+           Q 102 114 100 106 Z"
+        fill="#15110D"/>
+  <!-- Boca pequeña debajo del bigote (línea recta = serio) -->
+  <line x1="114" y1="120" x2="126" y2="120" stroke="#15110D"
+        stroke-width="1.5" stroke-linecap="round"/>
+
+  <!-- ========== ETIQUETA "INSPECTOR" ENCIMA DEL CASCO ========== -->
+  <rect x="68" y="0" width="104" height="16" fill="#F2EDE0"
+        stroke="#15110D" stroke-width="1.5"/>
+  <text x="120" y="12" font-family="serif" font-style="italic"
+        font-weight="900" font-size="11" fill="#C8102E"
+        text-anchor="middle" letter-spacing="3">INSPECTOR</text>
+</svg>

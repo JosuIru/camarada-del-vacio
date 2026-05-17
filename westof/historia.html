@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Historia — West of Loathing: Frontera Cosmo-Soviética</title>
+  <!--
+    En WordPress: page-historia.php  o  page-{id}.php
+    Este archivo es una PÁGINA de WordPress (Page, no Post)
+    Se accede desde: /historia/
+  -->
+  <link rel="stylesheet" href="../css/style.css" />
+</head>
+<body class="pagina-historia pagina-interior">
+
+  <!-- HEADER (header.php) -->
+  <header class="site-header" role="banner">
+    <div class="contenedor">
+      <a href="../index.html" class="logo" aria-label="Inicio">
+        <span class="logo__icono">☭</span>
+        <span class="logo__texto">
+          West of Loathing
+          <span class="logo__subtexto">Frontera Cósmica</span>
+        </span>
+      </a>
+      <nav class="nav" id="navegacion" aria-label="Menú principal">
+        <ul class="nav-lista">
+          <li><a href="../index.html"   class="nav-enlace">Inicio</a></li>
+          <li><a href="historia.html"   class="nav-enlace activo">Historia</a></li>
+          <li><a href="clases.html"     class="nav-enlace">Clases</a></li>
+          <li><a href="planetas.html"   class="nav-enlace">Planetas</a></li>
+          <li><a href="galeria.html"    class="nav-enlace">Galería</a></li>
+          <li><a href="comprar.html"    class="nav-enlace nav-enlace--cta">¡Alistar!</a></li>
+        </ul>
+      </nav>
+      <button class="nav-toggle" aria-controls="navegacion" aria-expanded="false" aria-label="Abrir menú">☰</button>
+    </div>
+  </header>
+
+  <main id="contenido-principal">
+
+    <!-- BANNER DE PÁGINA INTERIOR
+         En WP: típicamente va aquí el título de la página con get_the_title()
+    -->
+    <div class="banner-pagina" style="
+      background-color: var(--color-cosmos);
+      padding: 3rem 0 2rem;
+      border-bottom: var(--borde);
+      position: relative;
+      overflow: hidden;
+    ">
+      <!-- Estrellas de fondo -->
+      <div style="position:absolute;inset:0;
+        background-image:
+          radial-gradient(1px 1px at 15% 30%, rgba(255,255,255,0.5) 0%,transparent),
+          radial-gradient(1px 1px at 45% 70%, rgba(255,255,255,0.4) 0%,transparent),
+          radial-gradient(2px 2px at 75% 20%, rgba(255,255,255,0.6) 0%,transparent),
+          radial-gradient(1px 1px at 90% 55%, rgba(255,255,255,0.3) 0%,transparent);
+        pointer-events:none;">
+      </div>
+      <div class="contenedor" style="position:relative; z-index:1;">
+        <!-- Miga de pan — En WP: Yoast SEO / Breadcrumb NavXT la genera -->
+        <nav class="breadcrumb" aria-label="Ruta de navegación">
+          <a href="../index.html">Inicio</a>
+          <span aria-hidden="true">›</span>
+          Historia
+        </nav>
+        <h1 style="
+          font-family: var(--fuente-titular);
+          font-size: var(--fs-4xl);
+          color: var(--color-blanco);
+          text-transform: uppercase;
+          text-shadow: 4px 4px 0 var(--color-rojo-oscuro);
+          line-height: 1.0;
+          margin-bottom: 0.5rem;
+        ">
+          La Historia<br/>
+          <span style="color: var(--color-medalla-claro);">de la Misión</span>
+        </h1>
+        <p style="
+          font-family: var(--fuente-maquina);
+          font-size: var(--fs-xs);
+          color: var(--color-rojo-claro);
+          text-transform: uppercase;
+          letter-spacing: 0.3em;
+        ">★ DOCUMENTO CLASIFICADO — ACCESO NIVEL CAMARADA ★</p>
+      </div>
+    </div>
+
+
+    <!-- CONTENIDO DE LA PÁGINA -->
+    <section class="historia" style="border-top: none;">
+      <div class="contenedor historia__inner">
+
+        <div class="historia__texto">
+          <span class="historia__clasificado">CAPÍTULO I</span>
+          <h2 class="historia__titulo">El Error del<br/>Camarada Directorskov</h2>
+          <p class="historia__cuerpo">
+            Era 1962. El Programa Espacial Soviético funcionaba a pleno rendimiento,
+            impulsado por vodka sintético y exceso de confianza. El camarada
+            Directorskov, jefe del Centro de Control, apretó el botón de "lanzamiento
+            de prueba" sin leer la nota que decía <em>"NO APRETAR SI NO ES MARTES"</em>.
+          </p>
+          <p class="historia__cuerpo">
+            Era miércoles.
+          </p>
+          <p class="historia__cuerpo">
+            La estación orbital Pravda-7, con una tripulación de dieciséis cosmonautas
+            y unas reservas de oxígeno calculadas para "suficiente tiempo",
+            fue lanzada hacia el sector desconocido del cuadrante Sigma con trayectoria
+            de no-retorno. El informe oficial habla de "misión de exploración voluntaria".
+          </p>
+
+          <div class="propaganda">
+            <p class="propaganda__texto">
+              "La exploración espacial es el destino natural del proletariado.
+              El cosmos pertenece a quienes lo trabajan."
+            </p>
+            <p class="propaganda__autor">— Discurso de inauguración, Pravda-7, 1962</p>
+          </div>
+
+          <h2 class="historia__titulo" style="margin-top: 2.5rem;">El Cuadrante Sigma</h2>
+          <p class="historia__cuerpo">
+            Lo que nadie sabía —y el Comité Central había clasificado en el nivel
+            "no existe"— es que el cuadrante Sigma está habitado. Por una variedad
+            de civilizaciones extraterrestres que descubrieron el marxismo por su
+            cuenta y lo llevaron a conclusiones que Marx no habría aprobado, no porque
+            fueran erróneas, sino porque eran demasiado literales.
+          </p>
+          <p class="historia__cuerpo">
+            Los marcianos de Zovnak-4, por ejemplo, decidieron que la democracia
+            directa era el único sistema válido. Cada decisión —desde la política
+            exterior hasta si encender la luz— requiere quórum. Llevan cuarenta años
+            en asamblea. La luz sigue apagada.
+          </p>
+        </div>
+
+        <!-- Documento oficial / pergamino -->
+        <div class="historia__documento">
+          <div class="informe-oficial">
+            <div class="informe-oficial__header">
+              <span class="informe-oficial__titulo">☭ EXTRACTO DIARIO DE MISIÓN</span>
+              <span class="informe-oficial__num">Día 1 – 47 – ∞</span>
+            </div>
+            <div class="informe-oficial__cuerpo">
+              <p><strong>Día 1:</strong><br/>
+              Lanzamiento exitoso. Nadie preguntó<br/>
+              a dónde íbamos.<br/><br/>
+
+              <strong>Día 8:</strong><br/>
+              Primer contacto con Zovnak-4.<br/>
+              Los nativos nos piden el formulario<br/>
+              F-447 para aterrizar. No lo tenemos.<br/>
+              Dicen que pueden imprimir uno.<br/>
+              Llevan tres días votando el tipo de letra.<br/><br/>
+
+              <strong>Día 23:</strong><br/>
+              El oxígeno se raciona por méritos.<br/>
+              El camarada Gromov respira menos<br/>
+              por llegar tarde al turno.<br/>
+              Está de acuerdo. Es inquietante.<br/><br/>
+
+              <strong>Día 47:</strong><br/>
+              Hemos encontrado el sol sindicalizado.<br/>
+              Negocia condiciones laborales.<br/>
+              Lo respetamos.</p>
+            </div>
+            <div class="informe-oficial__sello">ALTO SECRETO</div>
+          </div>
+
+          <div class="informe-oficial" style="margin-top: 1.5rem;">
+            <div class="informe-oficial__header">
+              <span class="informe-oficial__titulo">☭ CAPÍTULO II — TU MISIÓN</span>
+              <span class="informe-oficial__num">PENDIENTE</span>
+            </div>
+            <div class="informe-oficial__cuerpo">
+              <p>Tú llegas en la Pravda-12.<br/>
+              Misión: encontrar la Pravda-7.<br/>
+              Objetivo secundario: no hacer<br/>
+              lo que hizo Directorskov.<br/><br/>
+              Objetivo terciario: sobrevivir<br/>
+              a la asamblea de Zovnak-4.<br/><br/>
+              <em>Nadie ha sobrevivido antes.<br/>
+              No por peligro físico.<br/>
+              Por aburrimiento.</em>
+              </p>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+
+    <!-- SEGUNDA SECCIÓN DE CONTENIDO -->
+    <section style="
+      background-color: var(--color-papel-oscuro);
+      padding: var(--esp-20) 0;
+      border-top: var(--borde);
+    ">
+      <div class="contenedor">
+        <h2 class="titulo-seccion">El Cosmos según el Partido</h2>
+        <p class="subtitulo-seccion">★ Extractos del manual oficial de exploración espacial soviética ★</p>
+
+        <div style="display: grid; grid-template-columns: repeat(3,1fr); gap: 2rem; margin-top: 2rem;">
+
+          <div class="card-feature">
+            <span class="card-feature__icono">☭</span>
+            <h3 class="card-feature__titulo">El Método</h3>
+            <p class="card-feature__texto">
+              Todo problema cósmico tiene solución ideológica. Si la nave no arranca,
+              es que carece de conciencia de clase. Explícaselo al motor.
+            </p>
+          </div>
+
+          <div class="card-feature card-feature--cosmos">
+            <span class="card-feature__icono">🌌</span>
+            <h3 class="card-feature__titulo">El Cosmos</h3>
+            <p class="card-feature__texto">
+              El espacio exterior no es vacío. Es un lienzo en blanco donde
+              imprimir los principios de la revolución. Con buena cinta adhesiva.
+            </p>
+          </div>
+
+          <div class="card-feature">
+            <span class="card-feature__icono">📋</span>
+            <h3 class="card-feature__titulo">La Burocracia</h3>
+            <p class="card-feature__texto">
+              El formulario correcto puede abrir cualquier puerta. El formulario
+              incorrecto puede cerrar una galaxia. Siempre lleva el F-447 por duplicado.
+            </p>
+          </div>
+
+        </div>
+
+        <div style="text-align:center; margin-top: 3rem;">
+          <a href="clases.html" class="btn btn--primario">
+            Elegir Clase de Personaje →
+          </a>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <!-- FOOTER (footer.php) -->
+  <footer class="site-footer" role="contentinfo">
+    <div class="contenedor">
+      <div class="footer__grid">
+        <div class="footer__marca">
+          <p class="footer__logo">☭ West of Loathing</p>
+          <p class="footer__eslogan">Frontera Espacial Cosmo-Soviética</p>
+          <p class="footer__copy">© 1962–2024 Ministerio de Entretenimiento Revolucionario.<br/>Todos los derechos reservados por el Partido.</p>
+        </div>
+        <div>
+          <h4 class="footer__encabezado">El Juego</h4>
+          <ul class="footer__lista">
+            <li><a href="historia.html">Historia</a></li>
+            <li><a href="clases.html">Clases</a></li>
+            <li><a href="planetas.html">Planetas</a></li>
+            <li><a href="galeria.html">Galería</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="footer__encabezado">Partido</h4>
+          <ul class="footer__lista">
+            <li><a href="#">Manifiesto</a></li>
+            <li><a href="#">Credenciales</a></li>
+            <li><a href="#">Privacidad</a></li>
+            <li><a href="#">Contacto</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="footer__encabezado">Canales</h4>
+          <div class="redes-sociales">
+            <a href="#" class="red-social">☭ Steam</a>
+            <a href="#" class="red-social">☭ Discord</a>
+            <a href="#" class="red-social">☭ Twitter</a>
+          </div>
+        </div>
+      </div>
+      <div class="footer__linea">
+        <p>Desarrollado con vodka sintético y cinta adhesiva de alta resistencia.</p>
+        <p class="footer__propaganda">★ POR EL COSMOS Y LA REVOLUCIÓN ★</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="../js/main.js"></script>
+</body>
+</html>

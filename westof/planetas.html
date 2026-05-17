@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Planetas — West of Loathing: Frontera Cosmo-Soviética</title>
+  <!--
+    En WordPress: archive-planeta.php
+    CPT "planeta" con has_archive => true
+    URL: /planetas/
+  -->
+  <link rel="stylesheet" href="../css/style.css" />
+</head>
+<body class="archive-planeta pagina-interior">
+
+  <header class="site-header" role="banner">
+    <div class="contenedor">
+      <a href="../index.html" class="logo" aria-label="Inicio">
+        <span class="logo__icono">☭</span>
+        <span class="logo__texto">West of Loathing<span class="logo__subtexto">Frontera Cósmica</span></span>
+      </a>
+      <nav class="nav" id="navegacion">
+        <ul class="nav-lista">
+          <li><a href="../index.html" class="nav-enlace">Inicio</a></li>
+          <li><a href="historia.html" class="nav-enlace">Historia</a></li>
+          <li><a href="clases.html"   class="nav-enlace">Clases</a></li>
+          <li><a href="planetas.html" class="nav-enlace activo">Planetas</a></li>
+          <li><a href="galeria.html"  class="nav-enlace">Galería</a></li>
+          <li><a href="comprar.html"  class="nav-enlace nav-enlace--cta">¡Alistar!</a></li>
+        </ul>
+      </nav>
+      <button class="nav-toggle" aria-controls="navegacion" aria-expanded="false" aria-label="Abrir menú">☰</button>
+    </div>
+  </header>
+
+  <main id="contenido-principal">
+
+    <div style="background-color:var(--color-cosmos);padding:3rem 0 2rem;border-bottom:var(--borde);position:relative;overflow:hidden;">
+      <div style="position:absolute;inset:0;background-image:radial-gradient(1px 1px at 20% 25%,rgba(255,255,255,.5)0%,transparent),radial-gradient(1px 1px at 60% 60%,rgba(255,255,255,.4)0%,transparent),radial-gradient(1px 1px at 85% 15%,rgba(255,255,255,.6)0%,transparent);pointer-events:none;"></div>
+      <div class="contenedor" style="position:relative;z-index:1;">
+        <nav class="breadcrumb">
+          <a href="../index.html">Inicio</a><span>›</span>Planetas
+        </nav>
+        <h1 style="font-family:var(--fuente-titular);font-size:var(--fs-4xl);color:var(--color-blanco);text-transform:uppercase;text-shadow:4px 4px 0 var(--color-rojo-oscuro);line-height:1.0;margin-bottom:.5rem;">
+          Planetas en<span style="display:block;color:var(--color-medalla-claro);">Misión Oficial</span>
+        </h1>
+        <p style="font-family:var(--fuente-maquina);font-size:var(--fs-xs);color:var(--color-rojo-claro);text-transform:uppercase;letter-spacing:.3em;">
+          ★ CATÁLOGO DE MUNDOS — APROBADO POR EL COMITÉ CÓSMICO ★
+        </p>
+      </div>
+    </div>
+
+    <!-- ARCHIVO DE PLANETAS — En WP: loop del CPT "planeta" -->
+    <section class="planetas" style="padding-top:4rem;padding-bottom:4rem;">
+      <div class="contenedor">
+        <h2 class="titulo-seccion" style="color:var(--color-blanco);">Mundos Disponibles</h2>
+        <p class="subtitulo-seccion" style="color:var(--color-blanco-apagado);">★ Todos requieren formulario F-447 para visitar ★</p>
+
+        <div class="planetas__grid" style="position:relative;z-index:1;">
+
+          <article class="card-planeta" id="zovnak4">
+            <div class="card-planeta__orb" style="background:radial-gradient(circle at 35% 35%,#e05a3a,#8c1a10);">🌋</div>
+            <h3 class="card-planeta__nombre">Zovnak-4</h3>
+            <p class="card-planeta__tipo">Planeta de Asamblea Permanente</p>
+            <p class="card-planeta__desc">
+              Democracia directa llevada al límite existencial. Cada acto requiere quórum.
+              Llevan 40 años votando si instalar agua corriente. El resultado está pendiente
+              de segunda vuelta.
+            </p>
+            <div style="font-family:var(--fuente-maquina);font-size:var(--fs-xs);color:var(--color-medalla);text-align:left;margin-bottom:1rem;">
+              <div>☭ Habitantes: ~2.4M de votantes</div>
+              <div>☭ Temperatura: Acalorada (debates)</div>
+              <div>☭ Oxígeno: Racionalizado por méritos</div>
+            </div>
+            <a href="#zovnak4" class="card-planeta__enlace">Expediente del planeta →</a>
+          </article>
+
+          <article class="card-planeta" id="gelida9">
+            <div class="card-planeta__orb" style="background:radial-gradient(circle at 35% 35%,#4a8fc8,#0b2a4a);">❄️</div>
+            <h3 class="card-planeta__nombre">Gélida-9</h3>
+            <p class="card-planeta__tipo">Luna de Burocracia Congelada</p>
+            <p class="card-planeta__desc">
+              -180°C en la superficie. 47 formularios para aterrizar. El Comité de Bienvenida
+              está en reunión permanente desde 1968. Los minutos de la reunión están
+              literalmente congelados.
+            </p>
+            <div style="font-family:var(--fuente-maquina);font-size:var(--fs-xs);color:var(--color-medalla);text-align:left;margin-bottom:1rem;">
+              <div>☭ Temperatura: -180°C</div>
+              <div>☭ Formularios: 47 (más IVA)</div>
+              <div>☭ Tiempo de espera: ∞</div>
+            </div>
+            <a href="#gelida9" class="card-planeta__enlace">Expediente del planeta →</a>
+          </article>
+
+          <article class="card-planeta" id="sol-camarada">
+            <div class="card-planeta__orb" style="background:radial-gradient(circle at 35% 35%,#f5c518,#8a620a);">☀️</div>
+            <h3 class="card-planeta__nombre">Sol Camarada</h3>
+            <p class="card-planeta__tipo">Estrella Sindicalizada</p>
+            <p class="card-planeta__desc">
+              El sol local está afiliado al Sindicato Estelar Galáctico (rama 7-B).
+              Amenaza huelga si no mejoran las condiciones de trabajo. Sus negociaciones
+              duran milenios. El sistema solar espera.
+            </p>
+            <div style="font-family:var(--fuente-maquina);font-size:var(--fs-xs);color:var(--color-medalla);text-align:left;margin-bottom:1rem;">
+              <div>☭ Tipo: Estrella G, sindicalizada</div>
+              <div>☭ Afiliación: SESG Rama 7-B</div>
+              <div>☭ Disposición: Negociadora</div>
+            </div>
+            <a href="#sol-camarada" class="card-planeta__enlace">Expediente del planeta →</a>
+          </article>
+
+          <article class="card-planeta" id="forma-13">
+            <div class="card-planeta__orb" style="background:radial-gradient(circle at 35% 35%,#6b4c9a,#2a1a4a);">🌑</div>
+            <h3 class="card-planeta__nombre">Formulario-13</h3>
+            <p class="card-planeta__tipo">Planeta Administrativo</p>
+            <p class="card-planeta__desc">
+              Un planeta que en algún momento fue un planeta normal. Ahora es
+              principalmente papeleo. Su núcleo está hecho de burocracia sedimentada
+              a lo largo de eras geológicas.
+            </p>
+            <div style="font-family:var(--fuente-maquina);font-size:var(--fs-xs);color:var(--color-medalla);text-align:left;margin-bottom:1rem;">
+              <div>☭ Superficie: 87% formularios</div>
+              <div>☭ Atmósfera: Tinta de sello</div>
+              <div>☭ Peligro: Burocracia mortal</div>
+            </div>
+            <a href="#forma-13" class="card-planeta__enlace">Expediente del planeta →</a>
+          </article>
+
+          <article class="card-planeta" id="viuda-negra">
+            <div class="card-planeta__orb" style="background:radial-gradient(circle at 35% 35%,#c05010,#401005);">🕳️</div>
+            <h3 class="card-planeta__nombre">Agujero Negro<br/>Sindicalizado</h3>
+            <p class="card-planeta__tipo">Singularidad con Convenio Colectivo</p>
+            <p class="card-planeta__desc">
+              Técnicamente no es un planeta. Pero tiene carné de afiliado desde 1971
+              y exige los mismos derechos laborales. Su demanda: jornadas de luz más cortas.
+            </p>
+            <div style="font-family:var(--fuente-maquina);font-size:var(--fs-xs);color:var(--color-medalla);text-align:left;margin-bottom:1rem;">
+              <div>☭ Masa: Infinita (categoría A)</div>
+              <div>☭ Derechos: Reconocidos</div>
+              <div>☭ Visitar: No recomendado</div>
+            </div>
+            <a href="#viuda-negra" class="card-planeta__enlace">Expediente del planeta →</a>
+          </article>
+
+          <article class="card-planeta" id="pravda-perdida">
+            <div class="card-planeta__orb" style="background:radial-gradient(circle at 35% 35%,#2e8b57,#0a3020);">🛸</div>
+            <h3 class="card-planeta__nombre">Pravda-7<br/>(Perdida)</h3>
+            <p class="card-planeta__tipo">Estación Orbital Desaparecida</p>
+            <p class="card-planeta__desc">
+              La estación que estás buscando. Última ubicación conocida: algún lugar en
+              el cuadrante Sigma. Señal de radio recibida: "todo va bien, por favor
+              no busquen, todo va bien."
+            </p>
+            <div style="font-family:var(--fuente-maquina);font-size:var(--fs-xs);color:var(--color-medalla);text-align:left;margin-bottom:1rem;">
+              <div>☭ Estado: Desaparecida</div>
+              <div>☭ Tripulación: 16 (oficialmente)</div>
+              <div>☭ Localización: ???</div>
+            </div>
+            <a href="#pravda-perdida" class="card-planeta__enlace">Expediente del planeta →</a>
+          </article>
+
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="site-footer" role="contentinfo">
+    <div class="contenedor">
+      <div class="footer__grid">
+        <div class="footer__marca">
+          <p class="footer__logo">☭ West of Loathing</p>
+          <p class="footer__eslogan">Frontera Espacial Cosmo-Soviética</p>
+          <p class="footer__copy">© 1962–2024 Ministerio de Entretenimiento Revolucionario.<br/>Todos los derechos reservados por el Partido.</p>
+        </div>
+        <div>
+          <h4 class="footer__encabezado">El Juego</h4>
+          <ul class="footer__lista">
+            <li><a href="historia.html">Historia</a></li>
+            <li><a href="clases.html">Clases</a></li>
+            <li><a href="planetas.html">Planetas</a></li>
+            <li><a href="galeria.html">Galería</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="footer__encabezado">Partido</h4>
+          <ul class="footer__lista">
+            <li><a href="#">Manifiesto</a></li>
+            <li><a href="#">Credenciales</a></li>
+            <li><a href="#">Privacidad</a></li>
+            <li><a href="#">Contacto</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="footer__encabezado">Canales</h4>
+          <div class="redes-sociales">
+            <a href="#" class="red-social">☭ Steam</a>
+            <a href="#" class="red-social">☭ Discord</a>
+            <a href="#" class="red-social">☭ Twitter</a>
+          </div>
+        </div>
+      </div>
+      <div class="footer__linea">
+        <p>Desarrollado con vodka sintético y cinta adhesiva de alta resistencia.</p>
+        <p class="footer__propaganda">★ POR EL COSMOS Y LA REVOLUCIÓN ★</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="../js/main.js"></script>
+</body>
+</html>
