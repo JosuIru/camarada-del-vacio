@@ -151,14 +151,15 @@ class _PantallaDokumentrisState extends State<PantallaDokumentris>
   }
 
   Future<void> _cargarSprites() async {
-    // Nombres canónicos del briefing §19.1: dokumentris_celda_<id>.png
-    final rutasCeldas = List<String>.generate(
-      7,
-      (indice) => 'assets/svg/dokumentris_celda_$indice.png',
-    );
+    // Mapeo tipo→letra de los archivos generados:
+    // 0=I, 1=O, 2=T, 3=L, 4=J, 5=S, 6=Z.
+    const letrasPorTipo = <String>['i', 'o', 't', 'l', 'j', 's', 'z'];
+    final rutasCeldas = letrasPorTipo
+        .map((letra) => 'assets/svg/dokumentris_celda_$letra.png')
+        .toList();
     final resultados = await cargarLoteOpcional(<String>[
       ...rutasCeldas,
-      'assets/svg/dokumentris_escritorio.png',
+      'assets/images/dokumentris_escritorio.png',
     ]);
     if (!mounted) return;
     setState(() {
@@ -1137,6 +1138,23 @@ class _PintorTableroDokumentris extends CustomPainter {
       return;
     }
 
+    // §19.1: si el sprite celda-sello para el tipo está cargado, render
+    // directo. Si no, fallback procedural.
+    final ui.Image? spriteCelda =
+        tipo >= 0 && tipo < imagenesCeldaPorTipo.length
+            ? imagenesCeldaPorTipo[tipo]
+            : null;
+    if (spriteCelda != null) {
+      canvas.drawImageRect(
+        spriteCelda,
+        Rect.fromLTWH(0, 0, spriteCelda.width.toDouble(),
+            spriteCelda.height.toDouble()),
+        rect.deflate(1),
+        Paint()..filterQuality = FilterQuality.high,
+      );
+      return;
+    }
+
     // Fondo papel del formulario.
     canvas.drawRect(
       rect.deflate(2),
@@ -1258,6 +1276,10 @@ class _PintorPiezaPreview extends CustomPainter {
     final celda = math.min(size.width, size.height) / 4;
     final offsetX = (size.width - celda * 4) / 2;
     final offsetY = (size.height - celda * 4) / 2;
+    final ui.Image? spriteCelda =
+        pieza.tipo >= 0 && pieza.tipo < imagenesCeldaPorTipo.length
+            ? imagenesCeldaPorTipo[pieza.tipo]
+            : null;
     for (int fila = 0; fila < 4; fila++) {
       for (int columna = 0; columna < 4; columna++) {
         if (pieza.matriz[fila][columna] != 1) continue;
@@ -1267,26 +1289,37 @@ class _PintorPiezaPreview extends CustomPainter {
           celda,
           celda,
         );
-        canvas.drawRect(
-          rect.deflate(2),
-          Paint()
-            ..color =
-                _PantallaDokumentrisState.coloresPorTipo[pieza.tipo],
-        );
-        canvas.drawRect(
-          rect.deflate(2),
-          Paint()
-            ..color = PaletaCosmoSovietica.tintaNegra
-            ..style = PaintingStyle.stroke
-            ..strokeWidth = 1.0,
-        );
+        if (spriteCelda != null) {
+          canvas.drawImageRect(
+            spriteCelda,
+            Rect.fromLTWH(0, 0, spriteCelda.width.toDouble(),
+                spriteCelda.height.toDouble()),
+            rect.deflate(1),
+            Paint()..filterQuality = FilterQuality.high,
+          );
+        } else {
+          canvas.drawRect(
+            rect.deflate(2),
+            Paint()
+              ..color =
+                  _PantallaDokumentrisState.coloresPorTipo[pieza.tipo],
+          );
+          canvas.drawRect(
+            rect.deflate(2),
+            Paint()
+              ..color = PaletaCosmoSovietica.tintaNegra
+              ..style = PaintingStyle.stroke
+              ..strokeWidth = 1.0,
+          );
+        }
       }
     }
   }
 
   @override
   bool shouldRepaint(covariant _PintorPiezaPreview viejo) =>
-      viejo.pieza != pieza;
+      viejo.pieza != pieza ||
+      viejo.imagenesCeldaPorTipo != imagenesCeldaPorTipo;
 }
 
 const String _flagHighscoreDokumentris = 'dokumentris_highscore_';

@@ -691,6 +691,35 @@ class _PintorPixelPerdido extends CustomPainter {
         if (xPx + anchoCelda < 0 || xPx > size.width) continue;
         final Rect rectCelda =
             Rect.fromLTWH(xPx, yPx, anchoCelda, altoCelda);
+        // §17: si el sprite pixel del tile está cargado, drawImageRect
+        // directo y saltar el render procedural. Mantiene fallback.
+        final ui.Image? spriteTile = switch (mapa[fila][columna]) {
+          '#' => imagenBloqueTile,
+          'X' => imagenCharcoTinta,
+          '*' => imagenKopek,
+          'F' => imagenBanderaMeta,
+          _ => null,
+        };
+        if (spriteTile != null) {
+          // La bandera (canónica 64×128) es más alta que la celda;
+          // la pintamos sobresaliendo hacia arriba para que el asta se
+          // vea entera. Los demás encajan en la celda.
+          final Rect rectSprite = mapa[fila][columna] == 'F'
+              ? Rect.fromLTWH(
+                  rectCelda.left,
+                  rectCelda.top - altoCelda,
+                  rectCelda.width,
+                  altoCelda * 2)
+              : rectCelda;
+          canvas.drawImageRect(
+            spriteTile,
+            Rect.fromLTWH(0, 0, spriteTile.width.toDouble(),
+                spriteTile.height.toDouble()),
+            rectSprite,
+            Paint()..filterQuality = FilterQuality.none, // pixel-art crisp
+          );
+          continue; // siguiente columna
+        }
         switch (mapa[fila][columna]) {
           case '#':
             // Bloque tipo ladrillo dibujado a rotulador: papel sucio +
@@ -896,12 +925,36 @@ class _PintorPixelPerdido extends CustomPainter {
         (posicionX - scrollCamara) * anchoCelda;
     final double yPiesJugador = (posicionY + 0.4) * altoCelda;
     final double yPxJugador = yPiesJugador - altoSpritePx / 2.0;
-    dibujarCadetePixelArt(
-      canvas,
-      centro: Offset(xPxJugador, yPxJugador),
-      escalaPixel: escalaPixelCadete,
-      direccionMira: direccionMira,
-    );
+    // §17.1: cadete pixel canónico (64×96) si está cargado, sino fallback.
+    if (imagenCadetePixel != null) {
+      final double anchoSpritePx = altoSpritePx * 64 / 96; // mantiene ratio
+      final Rect destino = Rect.fromCenter(
+        center: Offset(xPxJugador, yPxJugador),
+        width: anchoSpritePx,
+        height: altoSpritePx,
+      );
+      // Mirror horizontal si va hacia la izquierda.
+      canvas.save();
+      if (direccionMira < 0) {
+        canvas.translate(destino.center.dx * 2, 0);
+        canvas.scale(-1, 1);
+      }
+      canvas.drawImageRect(
+        imagenCadetePixel!,
+        Rect.fromLTWH(0, 0, imagenCadetePixel!.width.toDouble(),
+            imagenCadetePixel!.height.toDouble()),
+        destino,
+        Paint()..filterQuality = FilterQuality.none,
+      );
+      canvas.restore();
+    } else {
+      dibujarCadetePixelArt(
+        canvas,
+        centro: Offset(xPxJugador, yPxJugador),
+        escalaPixel: escalaPixelCadete,
+        direccionMira: direccionMira,
+      );
+    }
 
     // Overlay fin de partida.
     if (partidaTerminada) {

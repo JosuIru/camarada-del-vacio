@@ -754,24 +754,39 @@ class _PintorSuperPang extends CustomPainter {
     )..layout();
     pintorTecho.paint(canvas, const Offset(8, 6));
 
-    // Cuerda activa.
+    // Cuerda/arpón activo. §21.2: si el sprite del arpón está cargado,
+    // se renderiza estirado verticalmente desde el cadete hasta el techo.
     if (cuerdaActiva) {
       final double xPx = cuerdaX * size.width;
       final double topPx = cuerdaTopY * size.height;
-      canvas.drawLine(
-        Offset(xPx, topPx),
-        Offset(xPx, sueloPx),
-        Paint()
-          ..color = PaletaRotulador.rojoEstampilla
-          ..strokeWidth = 2.6
-          ..strokeCap = StrokeCap.round,
-      );
-      // Ancla en la punta.
-      canvas.drawRect(
-        Rect.fromCenter(
-            center: Offset(xPx, topPx), width: 10, height: 6),
-        Paint()..color = PaletaRotulador.rojoEstampilla,
-      );
+      if (imagenArpon != null) {
+        // Arpón canónico §21.2 es 40×500 (vertical). Lo dibujamos del
+        // alto exacto que tiene la cuerda activa.
+        final double anchoArponPx = math.max(6, size.width * 0.012);
+        canvas.drawImageRect(
+          imagenArpon!,
+          Rect.fromLTWH(0, 0, imagenArpon!.width.toDouble(),
+              imagenArpon!.height.toDouble()),
+          Rect.fromLTRB(
+              xPx - anchoArponPx / 2, topPx, xPx + anchoArponPx / 2, sueloPx),
+          Paint()..filterQuality = FilterQuality.high,
+        );
+      } else {
+        canvas.drawLine(
+          Offset(xPx, topPx),
+          Offset(xPx, sueloPx),
+          Paint()
+            ..color = PaletaRotulador.rojoEstampilla
+            ..strokeWidth = 2.6
+            ..strokeCap = StrokeCap.round,
+        );
+        // Ancla en la punta.
+        canvas.drawRect(
+          Rect.fromCenter(
+              center: Offset(xPx, topPx), width: 10, height: 6),
+          Paint()..color = PaletaRotulador.rojoEstampilla,
+        );
+      }
     }
 
     // Globos.
@@ -825,6 +840,25 @@ class _PintorSuperPang extends CustomPainter {
       width: radioPx * 2,
       height: radioPx * 2 * escalaY,
     );
+    // §21.1: sprite según tamaño (3=grande, 2=medio, 1=pequeño).
+    // Si está cargado, se usa drawImageRect; si no, fallback procedural.
+    final ui.Image? spriteGlobo = globo.tamano == 3
+        ? imagenGloboGrande
+        : globo.tamano == 2
+            ? imagenGloboMedio
+            : globo.tamano == 1
+                ? imagenGloboPequeno
+                : null;
+    if (spriteGlobo != null) {
+      canvas.drawImageRect(
+        spriteGlobo,
+        Rect.fromLTWH(
+            0, 0, spriteGlobo.width.toDouble(), spriteGlobo.height.toDouble()),
+        rectGlobo,
+        Paint()..filterQuality = FilterQuality.high,
+      );
+      return;
+    }
     // Relleno papel con tinta diluida.
     canvas.drawOval(
       rectGlobo,

@@ -308,6 +308,40 @@ class _PintorTransformacion extends CustomPainter {
 
   void _dibujarSiluetaProta(
       Canvas canvas, Offset centro, double escala, double alpha) {
+    // §20: si hay sprite cargado para la forma destino, drawImageRect.
+    // Caemos al render procedural cuando el asset no existe (forma
+    // `cadete` siempre cae a procedural porque depende de la clase
+    // en runtime).
+    final ui.Image? spriteForma = switch (formaDestino) {
+      FormaProtagonista.cadete => imagenFormaCadete,
+      FormaProtagonista.bolaPinball => imagenFormaBolaPinball,
+      FormaProtagonista.piezaTetris => imagenFormaPiezaTetris,
+      FormaProtagonista.comecocos => imagenFormaComecocos,
+      FormaProtagonista.agujaRadio => imagenFormaAgujaRadio,
+      FormaProtagonista.bolaNieve => imagenFormaBolaNieve,
+    };
+    if (spriteForma != null) {
+      // Aspect ratio nativo del sprite, ancho como `escala` × 2.
+      final double anchoDestino = escala * 2.5;
+      final double altoDestino =
+          anchoDestino * spriteForma.height / spriteForma.width;
+      final Rect destino = Rect.fromCenter(
+        center: centro,
+        width: anchoDestino,
+        height: altoDestino,
+      );
+      canvas.saveLayer(null, Paint()..color = PaletaRotulador.tinta
+          .withValues(alpha: alpha));
+      canvas.drawImageRect(
+        spriteForma,
+        Rect.fromLTWH(0, 0, spriteForma.width.toDouble(),
+            spriteForma.height.toDouble()),
+        destino,
+        Paint()..filterQuality = FilterQuality.high,
+      );
+      canvas.restore();
+      return;
+    }
     switch (formaDestino) {
       case FormaProtagonista.cadete:
         _dibujarSiluetaCadete(canvas, centro, escala, alpha: alpha);

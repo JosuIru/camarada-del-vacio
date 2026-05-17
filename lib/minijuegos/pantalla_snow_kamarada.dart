@@ -1124,11 +1124,24 @@ class _PintorSnowKamarada extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    // Cielo: papel viejo (sin gradiente).
-    canvas.drawRect(
-      Offset.zero & size,
-      Paint()..color = PaletaRotulador.papel,
-    );
+    // §14.5: si el fondo paisaje gélido está cargado, lo dibujamos
+    // cubriendo todo. El resto de capas (aurora, estrellas, plataformas,
+    // entidades) se sobrepone igual.
+    if (imagenFondoPaisaje != null) {
+      canvas.drawImageRect(
+        imagenFondoPaisaje!,
+        Rect.fromLTWH(0, 0, imagenFondoPaisaje!.width.toDouble(),
+            imagenFondoPaisaje!.height.toDouble()),
+        Offset.zero & size,
+        Paint()..filterQuality = FilterQuality.high,
+      );
+    } else {
+      // Cielo: papel viejo (sin gradiente).
+      canvas.drawRect(
+        Offset.zero & size,
+        Paint()..color = PaletaRotulador.papel,
+      );
+    }
 
     // Aurora boreal a rotulador: tres bandas onduladas de tinta diluida
     // dibujadas con líneas que sugieren cortinas de luz.
@@ -1412,25 +1425,36 @@ class _PintorSnowKamarada extends CustomPainter {
       canvas.rotate(formulario.rotacion);
       final Rect rectForm = Rect.fromCenter(
         center: Offset.zero,
-        width: size.width * 0.025,
-        height: size.width * 0.032,
+        width: size.width * 0.04,
+        height: size.width * 0.04,
       );
-      canvas.drawRect(
-        rectForm,
-        Paint()..color = PaletaRotulador.papel,
-      );
-      canvas.drawRect(
-        Rect.fromLTWH(rectForm.left, rectForm.top,
-            rectForm.width, rectForm.height * 0.18),
-        Paint()..color = PaletaRotulador.rojoEstampilla,
-      );
-      canvas.drawRect(
-        rectForm,
-        Paint()
-          ..color = PaletaRotulador.tinta
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = 1.2,
-      );
+      // §14.3: si el sprite del formulario está cargado, drawImageRect.
+      if (imagenFormularioProyectil != null) {
+        canvas.drawImageRect(
+          imagenFormularioProyectil!,
+          Rect.fromLTWH(0, 0, imagenFormularioProyectil!.width.toDouble(),
+              imagenFormularioProyectil!.height.toDouble()),
+          rectForm,
+          Paint()..filterQuality = FilterQuality.high,
+        );
+      } else {
+        canvas.drawRect(
+          rectForm,
+          Paint()..color = PaletaRotulador.papel,
+        );
+        canvas.drawRect(
+          Rect.fromLTWH(rectForm.left, rectForm.top,
+              rectForm.width, rectForm.height * 0.18),
+          Paint()..color = PaletaRotulador.rojoEstampilla,
+        );
+        canvas.drawRect(
+          rectForm,
+          Paint()
+            ..color = PaletaRotulador.tinta
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = 1.2,
+        );
+      }
       canvas.restore();
     }
 
@@ -1577,6 +1601,23 @@ class _PintorSnowKamarada extends CustomPainter {
     final Offset centro = _r(burocrata.posicion, size);
     final double radio = 0.035 * size.width;
     if (burocrata.convertidoEnBola) {
+      // §14.4: bola de papel sellada — si el sprite está cargado, lo
+      // usamos como render principal. Mantiene el patrón de overlay.
+      if (imagenBolaPapel != null) {
+        final Rect rectBola = Rect.fromCenter(
+          center: centro,
+          width: radio * 2.6,
+          height: radio * 2.6,
+        );
+        canvas.drawImageRect(
+          imagenBolaPapel!,
+          Rect.fromLTWH(0, 0, imagenBolaPapel!.width.toDouble(),
+              imagenBolaPapel!.height.toDouble()),
+          rectBola,
+          Paint()..filterQuality = FilterQuality.high,
+        );
+        return;
+      }
       // Envuelto en bola de papel sellada con cuño F-447.
       canvas.drawCircle(
         centro,
@@ -1629,6 +1670,28 @@ class _PintorSnowKamarada extends CustomPainter {
             ..strokeWidth = 1.0,
         );
       }
+      return;
+    }
+
+    // §14.2: si el sprite del capitalista está cargado, render directo
+    // (cubre traje, corbata, cabeza, chistera, monóculos y maletín en
+    // una pasada). Mantiene fallback procedural a continuación.
+    if (imagenCapitalista != null) {
+      final double altoSprite = radio * 5.0;
+      // Aspect ratio canónico §14.2: 220×340 → ancho = alto * 0.647.
+      final double anchoSprite = altoSprite * 220 / 340;
+      final Rect rectSprite = Rect.fromCenter(
+        center: centro.translate(0, -radio * 0.6),
+        width: anchoSprite,
+        height: altoSprite,
+      );
+      canvas.drawImageRect(
+        imagenCapitalista!,
+        Rect.fromLTWH(0, 0, imagenCapitalista!.width.toDouble(),
+            imagenCapitalista!.height.toDouble()),
+        rectSprite,
+        Paint()..filterQuality = FilterQuality.high,
+      );
       return;
     }
 

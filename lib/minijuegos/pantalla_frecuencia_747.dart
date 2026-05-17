@@ -145,7 +145,7 @@ class _PantallaFrecuencia747State extends State<PantallaFrecuencia747>
 
   Future<void> _cargarSprites() async {
     final resultados = await cargarLoteOpcional(<String>[
-      'assets/svg/radio_marco_completo.png',
+      'assets/images/radio_marco_completo.png',
       'assets/svg/radio_aguja_dial.png',
       'assets/svg/radio_aguja_vu.png',
       'assets/svg/radio_pulso_sintonizado.png',
@@ -711,18 +711,33 @@ class _PintorDialRadio extends CustomPainter {
       size.height * 0.42,
     );
 
-    // Fondo del cuadrante (papel ligeramente más amarillento).
-    canvas.drawRect(
-      rectDial,
-      Paint()..color = PaletaRotulador.papelSucio,
-    );
-    canvas.drawRect(
-      rectDial,
-      Paint()
-        ..color = PaletaRotulador.tinta
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 2,
-    );
+    // §18.1 — Marco completo de fondo: cubre toda la superficie del
+    // canvas del dial. Si el sprite está cargado, lo pintamos PRIMERO
+    // y el resto del render procedural queda como capa de detalles
+    // dinámicos por encima (agujas, marcas, halo, estática).
+    final ui.Image? marco = imagenMarcoCompleto;
+    if (marco != null) {
+      canvas.drawImageRect(
+        marco,
+        Rect.fromLTWH(
+            0, 0, marco.width.toDouble(), marco.height.toDouble()),
+        Rect.fromLTWH(0, 0, size.width, size.height),
+        Paint()..filterQuality = FilterQuality.high,
+      );
+    } else {
+      // Fallback procedural: fondo del cuadrante (papel amarillento).
+      canvas.drawRect(
+        rectDial,
+        Paint()..color = PaletaRotulador.papelSucio,
+      );
+      canvas.drawRect(
+        rectDial,
+        Paint()
+          ..color = PaletaRotulador.tinta
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 2,
+      );
+    }
 
     // Marcas numericas cada 0.5 MHz, principales cada 1 MHz.
     final double rango = frecuenciaMaxima - frecuenciaMinima;
@@ -788,8 +803,35 @@ class _PintorDialRadio extends CustomPainter {
             PaletaRotulador.rojoEstampilla,
             proximidadAEstacion * 0.8,
           )!;
-    // Halo de proximidad (más intenso cuanto más cerca).
-    if (proximidadAEstacion > 0.05) {
+    // §18.4 — Pulso sintonizado: anillo expansivo cuando hay enganche.
+    // El sprite se pinta centrado en la aguja con tamaño proporcional
+    // al cuadrante. Si no hay sprite o no está enganchada, cae el halo
+    // procedural normal.
+    final ui.Image? pulso = imagenPulsoSintonizado;
+    if (enganchada && pulso != null) {
+      final double ladoPulso = rectDial.height * 1.4;
+      final double fasePulso = (faseTickRadio * 2.0) % 1.0;
+      final double escalaPulso = 0.6 + fasePulso * 0.6; // [0.6..1.2]
+      final double alphaPulso = (1.0 - fasePulso).clamp(0.0, 1.0) * 0.85;
+      final Rect destinoPulso = Rect.fromCenter(
+        center: Offset(xAguja, rectDial.top + rectDial.height / 2),
+        width: ladoPulso * escalaPulso,
+        height: ladoPulso * escalaPulso,
+      );
+      canvas.drawImageRect(
+        pulso,
+        Rect.fromLTWH(
+            0, 0, pulso.width.toDouble(), pulso.height.toDouble()),
+        destinoPulso,
+        Paint()
+          ..filterQuality = FilterQuality.high
+          ..colorFilter = ColorFilter.mode(
+            Colors.white.withValues(alpha: alphaPulso),
+            BlendMode.modulate,
+          ),
+      );
+    } else if (proximidadAEstacion > 0.05) {
+      // Halo de proximidad procedural (más intenso cuanto más cerca).
       canvas.drawCircle(
         Offset(xAguja, rectDial.top + rectDial.height / 2),
         rectDial.height * 0.6 * proximidadAEstacion,
@@ -923,6 +965,29 @@ class _PintorDialRadio extends CustomPainter {
       canvas,
       Offset(centroLed.dx + 22, centroLed.dy - pintorLed.height / 2),
     );
+
+    // §18.5 — Panel mensaje: overlay inferior con cinta soviética
+    // narrativa cuando se ha enganchado una estación. El sprite se
+    // dimensiona al ancho útil con margen y se ancla en la parte baja.
+    final ui.Image? panel = imagenPanelMensaje;
+    if (enganchada && panel != null) {
+      final double anchoPanel = size.width * 0.62;
+      final double ratioPanel = panel.height / panel.width;
+      final double altoPanel = anchoPanel * ratioPanel;
+      final Rect destinoPanel = Rect.fromLTWH(
+        (size.width - anchoPanel) / 2,
+        size.height - altoPanel - margen * 0.6,
+        anchoPanel,
+        altoPanel,
+      );
+      canvas.drawImageRect(
+        panel,
+        Rect.fromLTWH(
+            0, 0, panel.width.toDouble(), panel.height.toDouble()),
+        destinoPanel,
+        Paint()..filterQuality = FilterQuality.high,
+      );
+    }
   }
 
   void _dibujarVuMeter(Canvas canvas, Size size, double margen) {

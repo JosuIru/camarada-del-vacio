@@ -126,7 +126,7 @@ class _PantallaInspektorPacmanState extends State<PantallaInspektorPacman>
       'assets/svg/pacman_komisario_pipa.png',
       'assets/svg/pacman_expediente.png',
       'assets/svg/pacman_tinta_power.png',
-      'assets/svg/pacman_fondo_laberinto.png',
+      'assets/images/pacman_fondo_laberinto.png',
     ]);
     if (!mounted) return;
     setState(() {
@@ -1040,6 +1040,20 @@ class _PintorTableroPacman extends CustomPainter {
     final double anchoCelda = size.width / columnas;
     final double altoCelda = size.height / filas;
 
+    // §16.5: si el fondo del laberinto está cargado, lo pintamos como
+    // capa base; la geometría procedural (paredes, expedientes,
+    // power-ups) se superpone igual encima para que el gameplay siga
+    // siendo legible sobre cualquier fondo.
+    if (imagenFondoLaberinto != null) {
+      canvas.drawImageRect(
+        imagenFondoLaberinto!,
+        Rect.fromLTWH(0, 0, imagenFondoLaberinto!.width.toDouble(),
+            imagenFondoLaberinto!.height.toDouble()),
+        Offset.zero & size,
+        Paint()..filterQuality = FilterQuality.high,
+      );
+    }
+
     // Paredes a tinta sobre papel.
     final Paint pincelPared = Paint()
       ..color = PaletaRotulador.tintaDiluida(0.85)
@@ -1094,24 +1108,49 @@ class _PintorTableroPacman extends CustomPainter {
             canvas.drawRect(rectCelda, pincelPasillo);
         }
         if (valorCelda == 0) {
-          // Expediente: pequeño círculo a tinta (visible sobre papel).
-          canvas.drawCircle(
-            rectCelda.center,
-            anchoCelda * 0.13,
-            pincelExpediente,
-          );
+          // §16.3: expediente con sprite si está cargado.
+          if (imagenExpediente != null) {
+            final double tamPx = anchoCelda * 0.35;
+            canvas.drawImageRect(
+              imagenExpediente!,
+              Rect.fromLTWH(0, 0, imagenExpediente!.width.toDouble(),
+                  imagenExpediente!.height.toDouble()),
+              Rect.fromCenter(
+                  center: rectCelda.center, width: tamPx, height: tamPx),
+              Paint()..filterQuality = FilterQuality.high,
+            );
+          } else {
+            canvas.drawCircle(
+              rectCelda.center,
+              anchoCelda * 0.13,
+              pincelExpediente,
+            );
+          }
         } else if (valorCelda == 3) {
-          // Power-up tacha de tinta: cuadradito que late.
-          final double pulso =
-              0.45 + 0.20 * math.sin(faseBoca * 0.5);
-          canvas.drawRect(
-            Rect.fromCenter(
-              center: rectCelda.center,
-              width: anchoCelda * pulso,
-              height: altoCelda * pulso,
-            ),
-            pincelPowerUp,
-          );
+          // §16.4: tinta power-up con sprite si está cargado.
+          final double pulso = 0.45 + 0.20 * math.sin(faseBoca * 0.5);
+          if (imagenTintaPower != null) {
+            canvas.drawImageRect(
+              imagenTintaPower!,
+              Rect.fromLTWH(0, 0, imagenTintaPower!.width.toDouble(),
+                  imagenTintaPower!.height.toDouble()),
+              Rect.fromCenter(
+                center: rectCelda.center,
+                width: anchoCelda * pulso * 1.6,
+                height: altoCelda * pulso * 1.6,
+              ),
+              Paint()..filterQuality = FilterQuality.high,
+            );
+          } else {
+            canvas.drawRect(
+              Rect.fromCenter(
+                center: rectCelda.center,
+                width: anchoCelda * pulso,
+                height: altoCelda * pulso,
+              ),
+              pincelPowerUp,
+            );
+          }
         }
       }
     }
@@ -1149,9 +1188,10 @@ class _PintorTableroPacman extends CustomPainter {
       );
     }
 
-    // Komisarios.
-    for (final komisario in komisarios) {
-      _dibujarKomisario(canvas, komisario, anchoCelda, altoCelda);
+    // Komisarios — orden del array es la variante (0=gorro,
+    // 1=monóculo, 2=bigote, 3=pipa) según §16.2.
+    for (int i = 0; i < komisarios.length; i++) {
+      _dibujarKomisario(canvas, komisarios[i], i, anchoCelda, altoCelda);
     }
 
     // Inspektor.
@@ -1199,6 +1239,19 @@ class _PintorTableroPacman extends CustomPainter {
       inspektorY * altoCelda,
     );
     final double radio = anchoCelda * 0.45;
+    // §16.1: si el sprite del Inspektor está cargado, lo usamos como
+    // billboard. Si no, fallback al render procedural come-cocos.
+    if (imagenInspektor != null) {
+      canvas.drawImageRect(
+        imagenInspektor!,
+        Rect.fromLTWH(0, 0, imagenInspektor!.width.toDouble(),
+            imagenInspektor!.height.toDouble()),
+        Rect.fromCenter(
+            center: centro, width: radio * 2.4, height: radio * 2.4),
+        Paint()..filterQuality = FilterQuality.high,
+      );
+      return;
+    }
     // Casco del cosmonauta abriendose como un Pac-Man.
     final double aperturaBoca =
         0.18 + 0.28 * math.sin(faseBoca).abs();
@@ -1224,7 +1277,11 @@ class _PintorTableroPacman extends CustomPainter {
   }
 
   void _dibujarKomisario(
-      Canvas canvas, _Komisario komisario, double anchoCelda, double altoCelda) {
+      Canvas canvas,
+      _Komisario komisario,
+      int indiceVariante,
+      double anchoCelda,
+      double altoCelda) {
     final Offset centro = Offset(
       komisario.posX * anchoCelda,
       komisario.posY * altoCelda,
@@ -1233,6 +1290,33 @@ class _PintorTableroPacman extends CustomPainter {
     final Color colorCuerpo = komisario.aturdido
         ? PaletaRotulador.tintaDiluida(0.20)
         : komisario.color;
+
+    // §16.2: sprite según variante (0=gorro, 1=monóculo, 2=bigote,
+    // 3=pipa). El aturdido sigue procedural para que el cambio visual
+    // sea inmediato (color desaturado + sprite plano confunden menos).
+    final ui.Image? spriteKomisario = !komisario.aturdido
+        ? switch (indiceVariante) {
+            0 => imagenKomisarioGorro,
+            1 => imagenKomisarioMonoculo,
+            2 => imagenKomisarioBigote,
+            3 => imagenKomisarioPipa,
+            _ => null,
+          }
+        : null;
+    if (spriteKomisario != null) {
+      // Aspect ratio canónico §16.2: 180×220 → 0.82:1.
+      final double altoSprite = radio * 2.8;
+      final double anchoSprite = altoSprite * 180 / 220;
+      canvas.drawImageRect(
+        spriteKomisario,
+        Rect.fromLTWH(0, 0, spriteKomisario.width.toDouble(),
+            spriteKomisario.height.toDouble()),
+        Rect.fromCenter(
+            center: centro, width: anchoSprite, height: altoSprite),
+        Paint()..filterQuality = FilterQuality.high,
+      );
+      return;
+    }
 
     final Paint pincelTrazo = Paint()
       ..color = PaletaRotulador.tinta

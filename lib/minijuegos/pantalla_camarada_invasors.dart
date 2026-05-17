@@ -827,7 +827,7 @@ class _PintorMundoInvasors extends CustomPainter {
       _dibujarNaveBonus(canvas, size);
     }
 
-    // Bunkers F-447.
+    // Bunkers F-447. §15.6: sprite o fallback procedural.
     for (final bunker in bunkers) {
       if (bunker.integridad <= 0) continue;
       final Offset centroPx = _r(bunker.posicion, size);
@@ -836,44 +836,59 @@ class _PintorMundoInvasors extends CustomPainter {
       final double alphaBunker = (bunker.integridad).clamp(0.2, 1.0);
       final Rect rectBunker =
           Rect.fromCenter(center: centroPx, width: anchoPx, height: altoPx);
-      canvas.drawRect(
-        rectBunker,
-        Paint()
-          ..color = PaletaRotulador.papelSucio.withValues(alpha: alphaBunker),
-      );
-      canvas.drawRect(
-        Rect.fromLTWH(rectBunker.left, rectBunker.top,
-            rectBunker.width, rectBunker.height * 0.22),
-        Paint()
-          ..color = PaletaRotulador.rojoEstampilla
-              .withValues(alpha: alphaBunker),
-      );
-      canvas.drawRect(
-        rectBunker,
-        Paint()
-          ..color = PaletaRotulador.tinta.withValues(alpha: alphaBunker)
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = 1.4,
-      );
-      final pintor = TextPainter(
-        text: TextSpan(
-          text: 'F-447',
-          style: TextStyle(
-            color:
-                PaletaRotulador.tinta.withValues(alpha: alphaBunker),
-            fontFamily: 'CosmoMono',
-            fontSize: math.max(8, altoPx * 0.35),
-            fontWeight: FontWeight.w900,
-            letterSpacing: 1.0,
+      if (imagenBunkerF447 != null) {
+        canvas.drawImageRect(
+          imagenBunkerF447!,
+          Rect.fromLTWH(0, 0, imagenBunkerF447!.width.toDouble(),
+              imagenBunkerF447!.height.toDouble()),
+          rectBunker,
+          Paint()
+            ..filterQuality = FilterQuality.high
+            ..colorFilter = ColorFilter.mode(
+              PaletaRotulador.papel.withValues(alpha: 1.0 - alphaBunker),
+              BlendMode.srcATop,
+            ),
+        );
+      } else {
+        canvas.drawRect(
+          rectBunker,
+          Paint()
+            ..color =
+                PaletaRotulador.papelSucio.withValues(alpha: alphaBunker),
+        );
+        canvas.drawRect(
+          Rect.fromLTWH(rectBunker.left, rectBunker.top,
+              rectBunker.width, rectBunker.height * 0.22),
+          Paint()
+            ..color = PaletaRotulador.rojoEstampilla
+                .withValues(alpha: alphaBunker),
+        );
+        canvas.drawRect(
+          rectBunker,
+          Paint()
+            ..color = PaletaRotulador.tinta.withValues(alpha: alphaBunker)
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = 1.4,
+        );
+        final pintor = TextPainter(
+          text: TextSpan(
+            text: 'F-447',
+            style: TextStyle(
+              color: PaletaRotulador.tinta.withValues(alpha: alphaBunker),
+              fontFamily: 'CosmoMono',
+              fontSize: math.max(8, altoPx * 0.35),
+              fontWeight: FontWeight.w900,
+              letterSpacing: 1.0,
+            ),
           ),
-        ),
-        textDirection: TextDirection.ltr,
-      )..layout();
-      pintor.paint(
-        canvas,
-        Offset(centroPx.dx - pintor.width / 2,
-            centroPx.dy - pintor.height / 2 + altoPx * 0.12),
-      );
+          textDirection: TextDirection.ltr,
+        )..layout();
+        pintor.paint(
+          canvas,
+          Offset(centroPx.dx - pintor.width / 2,
+              centroPx.dy - pintor.height / 2 + altoPx * 0.12),
+        );
+      }
     }
 
     // Invasores.
@@ -881,40 +896,68 @@ class _PintorMundoInvasors extends CustomPainter {
       _dibujarInvasorYanki(canvas, invasor, size);
     }
 
-    // Disparos cadete: pequeños sellos rojos verticales.
+    // Disparos cadete: §15.7 sprite o fallback procedural.
     for (final disparo in disparosCadete) {
       final Offset centroPx = _r(disparo.posicion, size);
-      canvas.drawRect(
-        Rect.fromCenter(
-            center: centroPx,
-            width: size.width * 0.008,
-            height: size.height * 0.028),
-        Paint()..color = PaletaRotulador.rojoEstampilla,
-      );
-      canvas.drawCircle(
-        centroPx.translate(0, -size.height * 0.012),
-        size.width * 0.010,
-        Paint()..color = PaletaRotulador.rojoEstampilla,
-      );
+      final double anchoProyectil = size.width * 0.018;
+      final double altoProyectil = size.height * 0.04;
+      if (imagenProyectilRojo != null) {
+        canvas.drawImageRect(
+          imagenProyectilRojo!,
+          Rect.fromLTWH(0, 0, imagenProyectilRojo!.width.toDouble(),
+              imagenProyectilRojo!.height.toDouble()),
+          Rect.fromCenter(
+              center: centroPx,
+              width: anchoProyectil,
+              height: altoProyectil),
+          Paint()..filterQuality = FilterQuality.high,
+        );
+      } else {
+        canvas.drawRect(
+          Rect.fromCenter(
+              center: centroPx,
+              width: size.width * 0.008,
+              height: size.height * 0.028),
+          Paint()..color = PaletaRotulador.rojoEstampilla,
+        );
+        canvas.drawCircle(
+          centroPx.translate(0, -size.height * 0.012),
+          size.width * 0.010,
+          Paint()..color = PaletaRotulador.rojoEstampilla,
+        );
+      }
     }
 
-    // Disparos yanki: rayos zig-zag azules.
+    // Disparos yanki: §15.8 sprite del dollar o fallback zig-zag.
     for (final disparo in disparosYanki) {
       final Offset centroPx = _r(disparo.posicion, size);
-      final Path camino = Path()
-        ..moveTo(centroPx.dx, centroPx.dy - size.height * 0.02)
-        ..lineTo(centroPx.dx - size.width * 0.006,
-            centroPx.dy - size.height * 0.008)
-        ..lineTo(centroPx.dx + size.width * 0.006,
-            centroPx.dy + size.height * 0.008)
-        ..lineTo(centroPx.dx, centroPx.dy + size.height * 0.02);
-      canvas.drawPath(
-        camino,
-        Paint()
-          ..color = PaletaRotulador.tinta
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = 2.4,
-      );
+      if (imagenProyectilDollar != null) {
+        canvas.drawImageRect(
+          imagenProyectilDollar!,
+          Rect.fromLTWH(0, 0, imagenProyectilDollar!.width.toDouble(),
+              imagenProyectilDollar!.height.toDouble()),
+          Rect.fromCenter(
+              center: centroPx,
+              width: size.width * 0.018,
+              height: size.height * 0.04),
+          Paint()..filterQuality = FilterQuality.high,
+        );
+      } else {
+        final Path camino = Path()
+          ..moveTo(centroPx.dx, centroPx.dy - size.height * 0.02)
+          ..lineTo(centroPx.dx - size.width * 0.006,
+              centroPx.dy - size.height * 0.008)
+          ..lineTo(centroPx.dx + size.width * 0.006,
+              centroPx.dy + size.height * 0.008)
+          ..lineTo(centroPx.dx, centroPx.dy + size.height * 0.02);
+        canvas.drawPath(
+          camino,
+          Paint()
+            ..color = PaletaRotulador.tinta
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = 2.4,
+        );
+      }
     }
 
     // Cadete defensor abajo.
@@ -1108,6 +1151,35 @@ class _PintorMundoInvasors extends CustomPainter {
     final double escala = size.width * 0.032;
     final bool patasAlt = faseAnimacionFlota < 0.5;
     final double desplazaPatas = patasAlt ? -escala * 0.10 : escala * 0.10;
+
+    // §15.1-§15.4: sprite según tipo. Aspect ratios canónicos:
+    // tioSam 180×220 (0.82), soldado 160×200 (0.80),
+    // hamburguesa 160×140 (1.14), cocaCola 140×220 (0.64).
+    final ui.Image? spriteInvasor = switch (invasor.tipo) {
+      _TipoInvasor.tioSam => imagenTioSam,
+      _TipoInvasor.soldadoUsa => imagenSoldadoUsa,
+      _TipoInvasor.hamburguesa => imagenHamburguesa,
+      _TipoInvasor.cocaCola => imagenCocaCola,
+    };
+    if (spriteInvasor != null) {
+      final double anchoInvasor = escala * 1.8;
+      final double altoInvasor = anchoInvasor *
+          spriteInvasor.height / spriteInvasor.width;
+      // La animación de patas oscilantes se traduce a un sutil Y-bob.
+      final Rect rectInvasor = Rect.fromCenter(
+        center: centro.translate(0, desplazaPatas * 0.4),
+        width: anchoInvasor,
+        height: altoInvasor,
+      );
+      canvas.drawImageRect(
+        spriteInvasor,
+        Rect.fromLTWH(0, 0, spriteInvasor.width.toDouble(),
+            spriteInvasor.height.toDouble()),
+        rectInvasor,
+        Paint()..filterQuality = FilterQuality.high,
+      );
+      return;
+    }
 
     final Paint pincelTrazo = Paint()
       ..color = PaletaRotulador.tinta
