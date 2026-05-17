@@ -148,13 +148,18 @@ prioridad" y son los tres más visibles después del Pinball.
 
 ## Fase 6 — Bugs y deuda técnica conocida
 
-- [ ] **F6.1 — TODO mascota_narrativa.dart:28**: confirmar que la
-  mascota NO aparece en todas las visitas a todos los escenarios
-  (sólo a veces). Revisar probabilidad/cooldown. Eliminar el
-  comentario TODO al terminar.
-- [ ] **F6.2 — Acceso debug en producción**: `title_screen.dart:328`
-  y `:590` muestran "ACCESO RÁPIDO · MENÚ DE DEBUG". Confirmar que
-  está detrás de un flag o eliminarlo antes de release final.
+- [x] **F6.1 — "TODO" mascota_narrativa.dart:28** (resuelto
+  2026-05-17): falso positivo. La palabra detectada por grep era
+  "TODAS" en español dentro del comentario explicativo. La lógica
+  de aparición determinista (hash escenario + revisita, 30%
+  probabilidad de salto) ya está implementada correctamente.
+- [x] **F6.2 — Gating menú debug** (resuelto 2026-05-17): añadido
+  `if (kDebugMode || _expedienteSinFiltroActivo)` alrededor del
+  `BotonPropaganda` en `title_screen.dart`. En desarrollo siempre
+  visible; en release sólo si el jugador descubre el huevo de
+  pascua "Expediente Sin Filtro" (7 pulsaciones sobre la estrella
+  roja). Compromiso entre limpieza de release y preservar el
+  easter egg ya implementado.
 - [x] **F6.3 — `dart:js_interop` sin conditional import**
   (resuelto 2026-05-17): split en tres archivos —
   `audio_procedural.dart` (export condicional),

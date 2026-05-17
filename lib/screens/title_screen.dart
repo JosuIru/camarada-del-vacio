@@ -1,4 +1,5 @@
 import 'dart:math' as math;
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import '../data/classes.dart';
 import '../models/character.dart';
@@ -583,15 +584,22 @@ class _PantallaTituloState extends State<PantallaTitulo>
                             : _intentarCargarPartida,
                       ),
                     ],
-                    const SizedBox(height: 8),
-                    BotonPropaganda(
-                      texto: _expedienteSinFiltroActivo
-                          ? '★ EXPEDIENTE SIN FILTRO ★'
-                          : '⚙ ACCESO RÁPIDO (DEBUG)',
-                      compacto: true,
-                      destacado: _expedienteSinFiltroActivo,
-                      onPressed: _mostrarMenuDebug,
-                    ),
+                    // En builds de release el botón sólo aparece si el
+                    // jugador ha desbloqueado el huevo de pascua
+                    // "Expediente Sin Filtro" (7 pulsaciones sobre la
+                    // estrella roja). En debug es siempre visible para
+                    // que el desarrollo no requiera repetir el ritual.
+                    if (kDebugMode || _expedienteSinFiltroActivo) ...[
+                      const SizedBox(height: 8),
+                      BotonPropaganda(
+                        texto: _expedienteSinFiltroActivo
+                            ? '★ EXPEDIENTE SIN FILTRO ★'
+                            : '⚙ ACCESO RÁPIDO (DEBUG)',
+                        compacto: true,
+                        destacado: _expedienteSinFiltroActivo,
+                        onPressed: _mostrarMenuDebug,
+                      ),
+                    ],
                     const SizedBox(height: 8),
                     Text(
                       _expedienteSinFiltroActivo
