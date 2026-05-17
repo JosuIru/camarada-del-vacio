@@ -17,14 +17,14 @@ assets generados para §12-§21 — render procedural en todos.
 
 ## Fase 0 — Infraestructura (prerequisito)
 
-- [ ] **F0.1 — Inicializar git**: `git init`, `.gitignore` Flutter
-  estándar (`build/`, `.dart_tool/`, `*.iml`, `tmp/`,
-  `assets_legacy_historicos/` opcional), primer commit con el
-  estado actual del proyecto.
-- [ ] **F0.2 — Baseline limpio**: `flutter analyze` debe pasar
-  sin errores. `flutter test` debe pasar (si no, anotar los tests
-  rotos en este documento antes de tocar nada). Sin esto, no se
-  puede distinguir regresión de bug previo.
+- [x] **F0.1 — Inicializar git** (hecho 2026-05-17): `git init -b main`
+  con `.gitignore` actualizado para excluir `tmp/`, `tmp_*.svg/png`.
+  Primer commit baseline: `acf3cbc chore: baseline inicial del
+  proyecto` con 299 archivos.
+- [x] **F0.2 — Baseline limpio** (hecho 2026-05-17): `flutter analyze`
+  → "No issues found!" en 3.1s. Flutter 3.41.9 estable, framework
+  rev 00b0c91f06. Pendiente: `flutter test` (sin tests escritos
+  todavía; carpeta `test/` vacía o mínima).
 - [x] **F0.3 — Auditoría del briefing** (hecha 2026-05-17):
   corregido "8 hotspots" → "9 hotspots" en §12; añadidas
   dimensiones 600×900 a §10.16. Resto de prompts §10-§21
@@ -155,6 +155,22 @@ prioridad" y son los tres más visibles después del Pinball.
 - [ ] **F6.2 — Acceso debug en producción**: `title_screen.dart:328`
   y `:590` muestran "ACCESO RÁPIDO · MENÚ DE DEBUG". Confirmar que
   está detrás de un flag o eliminarlo antes de release final.
+- [ ] **F6.3 — `dart:js_interop` sin conditional import**
+  (detectado 2026-05-17): `lib/utilities/audio_procedural.dart:1`
+  importa `dart:js_interop` directamente. Sólo existe en web →
+  rompe `flutter test` (VM). Hace que sea imposible escribir
+  widget tests que toquen `title_screen.dart`. Solución: stub
+  pattern con conditional import o `kIsWeb` guard.
+- [ ] **F6.4 — Tests obsoletos**: `test/widget_test.dart` busca
+  texto "CAMARADA" / "DEL VACÍO" que ya no existen (el título es
+  imagen `portada_principal.png`). Sustituir por aserciones
+  verificables. Tras F6.3+F6.4, debe pasar `flutter test --platform chrome`.
+
+## Verificaciones rápidas que han pasado
+
+- ✅ `flutter analyze` → "No issues found!" (Flutter 3.41.9, 2026-05-17).
+- ❌ `flutter test` → falla por F6.3 (import web).
+- ❌ `flutter test --platform chrome` → falla por F6.4 (test obsoleto).
 
 ## Patrón canónico de cableado (referencia)
 
