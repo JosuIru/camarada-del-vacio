@@ -547,8 +547,6 @@ class _PantallaReactorState extends State<PantallaReactor>
             cantidadParticulas: 36,
           ),
           factorAnchoMundo: 2.0,
-          bordeSuperior: 0.66,
-          bordeInferior: 0.92,
           posicionInicialJugador: const Offset(0.06, 0.86),
           puntoEntradaInicial: const Offset(-0.02, 0.86),
           onCodigoSecreto: _alCodigoSecretoMundoLibre,
