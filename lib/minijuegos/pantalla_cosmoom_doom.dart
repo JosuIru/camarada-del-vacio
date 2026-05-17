@@ -76,6 +76,18 @@ class _PantallaCosmoomDoomState extends State<PantallaCosmoomDoom>
 
   final List<_BurocrataZombi> enemigos = <_BurocrataZombi>[];
   final List<_SelloVolante> sellosLanzados = <_SelloVolante>[];
+  // Mesas decorativas dispersas por los pasillos del Ministerio. No
+  // tienen colisión — el cadete las atraviesa libremente; sólo aportan
+  // textura visual. Posiciones elegidas en celdas con valor 0 (aire)
+  // del [trazadoMapa] y que no coinciden con la posición inicial de
+  // ningún enemigo.
+  final List<_MesaDecorativa> mesasDecorativas = const <_MesaDecorativa>[
+    _MesaDecorativa(posX: 4.5, posY: 1.5),
+    _MesaDecorativa(posX: 10.5, posY: 7.5),
+    _MesaDecorativa(posX: 5.5, posY: 9.5),
+    _MesaDecorativa(posX: 2.5, posY: 13.5),
+    _MesaDecorativa(posX: 8.5, posY: 13.5),
+  ];
   double tiempoFlashDolor = 0;
   // Sprites del minijuego. Se cargan asincrónicamente en [initState];
   // mientras llegan (o si el asset no existe todavía — cableado
@@ -610,6 +622,7 @@ class _PantallaCosmoomDoomState extends State<PantallaCosmoomDoom>
             imagenMesaBurocratica: imagenMesaBurocratica,
             imagenSelloProyectil: imagenSelloProyectil,
             imagenHudCadete: imagenHudCadete,
+            mesasDecorativas: mesasDecorativas,
           ),
           child: Container(),
         ),
@@ -750,6 +763,8 @@ class _PintorVistaDoom extends CustomPainter {
   final ui.Image? imagenMesaBurocratica; // §13.3
   final ui.Image? imagenSelloProyectil; // §13.4
   final ui.Image? imagenHudCadete; // §13.5
+  /// Mesas decorativas (sin colisión) para texturar los pasillos.
+  final List<_MesaDecorativa> mesasDecorativas;
 
   _PintorVistaDoom({
     required this.mapa,
@@ -772,6 +787,7 @@ class _PintorVistaDoom extends CustomPainter {
     this.imagenMesaBurocratica,
     this.imagenSelloProyectil,
     this.imagenHudCadete,
+    this.mesasDecorativas = const <_MesaDecorativa>[],
   });
 
   @override
@@ -808,6 +824,64 @@ class _PintorVistaDoom extends CustomPainter {
       rectSuelo,
       Paint()..color = PaletaRotulador.papel,
     );
+    // §13.2: si la textura tileable del suelo está disponible, se pinta
+    // como baldosas con perspectiva escalonada — bandas horizontales más
+    // comprimidas cerca del horizonte y más anchas en el primer plano.
+    // No es raycasting de suelo verdadero (caro y poco aporte en este
+    // estilo doodle), pero da sensación de profundidad suficiente y se
+    // combina con las líneas de fuga procedurales que se pintan justo
+    // después.
+    final ui.Image? texturaSuelo = imagenSueloBaldosa;
+    if (texturaSuelo != null) {
+      final Rect srcFull = Rect.fromLTWH(
+        0,
+        0,
+        texturaSuelo.width.toDouble(),
+        texturaSuelo.height.toDouble(),
+      );
+      const int numBandasSuelo = 6;
+      for (int banda = 0; banda < numBandasSuelo; banda++) {
+        // Perspectiva cuadrática: las bandas cerca del horizonte (banda 0)
+        // son finas y representan poco mundo; las del frente (banda N-1)
+        // son altas y representan mucho mundo cercano.
+        final double yArriba = size.height / 2 +
+            (size.height / 2) *
+                (banda / numBandasSuelo) *
+                (banda / numBandasSuelo);
+        final double yAbajo = size.height / 2 +
+            (size.height / 2) *
+                ((banda + 1) / numBandasSuelo) *
+                ((banda + 1) / numBandasSuelo);
+        final double altoBanda = yAbajo - yArriba;
+        // Tamaño de baldosa en pantalla escala con la profundidad: más
+        // comprimida arriba, más expandida abajo.
+        final double tamBaldosa = altoBanda * 1.4;
+        final int numColumnas = (size.width / tamBaldosa).ceil() + 1;
+        // Atenuación por distancia al horizonte (más oscuro al fondo).
+        final double atenuacionBanda =
+            0.55 + (banda / numBandasSuelo) * 0.45;
+        final Paint pincelBaldosa = Paint()
+          ..filterQuality = FilterQuality.medium
+          ..colorFilter = ColorFilter.mode(
+            PaletaRotulador.tinta
+                .withValues(alpha: 1.0 - atenuacionBanda),
+            BlendMode.srcATop,
+          );
+        for (int col = 0; col < numColumnas; col++) {
+          canvas.drawImageRect(
+            texturaSuelo,
+            srcFull,
+            Rect.fromLTWH(
+              col * tamBaldosa,
+              yArriba,
+              tamBaldosa + 1,
+              altoBanda + 1,
+            ),
+            pincelBaldosa,
+          );
+        }
+      }
+    }
     // Lineas de perspectiva del suelo.
     final Offset puntoFuga = Offset(size.width / 2, size.height / 2);
     for (int indiceLinea = -6; indiceLinea <= 6; indiceLinea++) {
@@ -865,75 +939,139 @@ class _PintorVistaDoom extends CustomPainter {
       final double alturaPared = math.min(size.height * 1.4,
           distanciaProyeccion / (distanciaCorregida + 0.001));
       final double topePared = (size.height - alturaPared) / 2;
-      // Color según el tipo de pared (escala de tinta para que todo
-      // funcione en blanco y negro; el rojo se reserva para sellos y
-      // la puerta de salida).
-      Color colorPared;
-      switch (hit.valor) {
-        case 2:
-          // Pared con sello: rojo apagado.
-          colorPared = PaletaRotulador.rojoEstampilla.withValues(alpha: 0.85);
-          break;
-        case 3:
-          // Archivador: tinta media (más oscuro que muro estándar).
-          colorPared = PaletaRotulador.tintaDiluida(0.55);
-          break;
-        case 4:
-          // Puerta de salida: rojo pleno.
-          colorPared = PaletaRotulador.rojoEstampilla;
-          break;
-        default:
-          // Muro estándar: papel sucio.
-          colorPared = PaletaRotulador.papelSucio;
-      }
       // Atenuar por distancia (menos agresiva: visibilidad razonable
-      // hasta 14 unidades).
+      // hasta 14 unidades). Se reutiliza tanto en la rama con textura
+      // como en la procedural.
       final double atenuacion =
           (1.0 - (distanciaCorregida / 14).clamp(0.0, 0.80));
-      final Color colorFinal = Color.lerp(
-        PaletaRotulador.tinta,
-        hit.ladoX
-            ? Color.lerp(colorPared, PaletaRotulador.tinta, 0.20)!
-            : colorPared,
-        atenuacion,
-      )!;
-      canvas.drawRect(
-        Rect.fromLTWH(xPantalla, topePared, pasoColumnas.toDouble() + 1,
-            alturaPared),
-        Paint()..color = colorFinal,
-      );
-      // Textura pseudo-ladrillo: bandas horizontales con ligero
-      // alternado de tono segun la posicion vertical. Solo sobre paredes
-      // estandar y archivador para no enmascarar puerta/sello.
-      if (hit.valor == 1 || hit.valor == 3) {
-        // Cuantos "ladrillos" caben en la pared visible.
-        final int bandas = math.max(2, (alturaPared / 16).floor());
-        for (int indiceBanda = 0; indiceBanda < bandas; indiceBanda++) {
-          final double yBanda = topePared +
-              alturaPared * indiceBanda / bandas;
-          // Linea de mortero entre ladrillos (oscura).
-          canvas.drawLine(
-            Offset(xPantalla, yBanda),
-            Offset(xPantalla + pasoColumnas.toDouble() + 1, yBanda),
+      final Rect rectColumna = Rect.fromLTWH(xPantalla, topePared,
+          pasoColumnas.toDouble() + 1, alturaPared);
+
+      // §13.1: si la textura de pared está disponible, mapeo
+      // columna-a-columna estándar Wolfenstein. Excepción: la puerta
+      // de salida (valor 4) sigue siendo roja plena para que el jugador
+      // la lea como objetivo, no como pared más.
+      final ui.Image? texturaPared = imagenParedMinisterio;
+      if (texturaPared != null && hit.valor != 4) {
+        // Punto de impacto en coordenadas mundo (usa la distancia raw
+        // SIN corregir fish-eye: queremos el punto real, no el
+        // proyectado).
+        final double worldHitX =
+            jugadorX + math.cos(anguloRayo) * hit.distancia;
+        final double worldHitY =
+            jugadorY + math.sin(anguloRayo) * hit.distancia;
+        // U fraccionaria en [0,1) según el lado de la celda golpeado.
+        final double uTextura = hit.ladoX
+            ? (worldHitY - worldHitY.floor())
+            : (worldHitX - worldHitX.floor());
+        final int columnaTextura = (uTextura * texturaPared.width)
+            .floor()
+            .clamp(0, texturaPared.width - 1);
+        final Rect srcColumna = Rect.fromLTWH(
+          columnaTextura.toDouble(),
+          0,
+          1,
+          texturaPared.height.toDouble(),
+        );
+        canvas.drawImageRect(
+          texturaPared,
+          srcColumna,
+          rectColumna,
+          Paint()..filterQuality = FilterQuality.high,
+        );
+        // Atenuación por distancia: capa de tinta con alpha proporcional
+        // a "lejanía". Tiñe la textura hacia negro.
+        canvas.drawRect(
+          rectColumna,
+          Paint()
+            ..color = PaletaRotulador.tinta
+                .withValues(alpha: (1.0 - atenuacion) * 0.70),
+        );
+        // Lado X = pared mirando este/oeste; convención Wolfenstein:
+        // un poco más oscura para que el ojo lea profundidad.
+        if (hit.ladoX) {
+          canvas.drawRect(
+            rectColumna,
             Paint()
-              ..color = PaletaRotulador.tinta
-                  .withValues(alpha: 0.40 * atenuacion)
-              ..strokeWidth = 0.8,
+              ..color =
+                  PaletaRotulador.tinta.withValues(alpha: 0.12),
           );
-          // Cada otra banda, un leve highlight.
-          if (indiceBanda.isOdd) {
-            canvas.drawRect(
-              Rect.fromLTWH(
-                  xPantalla,
-                  yBanda + 1.5,
-                  pasoColumnas.toDouble() + 1,
-                  1.5),
+        }
+        // Pared con sello (valor 2) — tinte rojo extra para diferenciarla
+        // del muro estándar; el archivador (valor 3) mantiene la
+        // textura limpia.
+        if (hit.valor == 2) {
+          canvas.drawRect(
+            rectColumna,
+            Paint()
+              ..color = PaletaRotulador.rojoEstampilla
+                  .withValues(alpha: 0.35 * atenuacion),
+          );
+        }
+      } else {
+        // Fallback procedural — escala de tinta + bandas pseudo-ladrillo.
+        Color colorPared;
+        switch (hit.valor) {
+          case 2:
+            colorPared = PaletaRotulador.rojoEstampilla.withValues(alpha: 0.85);
+            break;
+          case 3:
+            colorPared = PaletaRotulador.tintaDiluida(0.55);
+            break;
+          case 4:
+            colorPared = PaletaRotulador.rojoEstampilla;
+            break;
+          default:
+            colorPared = PaletaRotulador.papelSucio;
+        }
+        final Color colorFinal = Color.lerp(
+          PaletaRotulador.tinta,
+          hit.ladoX
+              ? Color.lerp(colorPared, PaletaRotulador.tinta, 0.20)!
+              : colorPared,
+          atenuacion,
+        )!;
+        canvas.drawRect(
+          rectColumna,
+          Paint()..color = colorFinal,
+        );
+        if (hit.valor == 1 || hit.valor == 3) {
+          final int bandas = math.max(2, (alturaPared / 16).floor());
+          for (int indiceBanda = 0; indiceBanda < bandas; indiceBanda++) {
+            final double yBanda = topePared +
+                alturaPared * indiceBanda / bandas;
+            canvas.drawLine(
+              Offset(xPantalla, yBanda),
+              Offset(xPantalla + pasoColumnas.toDouble() + 1, yBanda),
               Paint()
                 ..color = PaletaRotulador.tinta
-                    .withValues(alpha: 0.10 * atenuacion),
+                    .withValues(alpha: 0.40 * atenuacion)
+                ..strokeWidth = 0.8,
             );
+            if (indiceBanda.isOdd) {
+              canvas.drawRect(
+                Rect.fromLTWH(xPantalla, yBanda + 1.5,
+                    pasoColumnas.toDouble() + 1, 1.5),
+                Paint()
+                  ..color = PaletaRotulador.tinta
+                      .withValues(alpha: 0.10 * atenuacion),
+              );
+            }
           }
         }
+      }
+      // Puerta de salida (valor 4) siempre se pinta encima como rect
+      // rojo pleno, exista o no textura — es el objetivo del nivel.
+      if (hit.valor == 4) {
+        canvas.drawRect(
+          rectColumna,
+          Paint()
+            ..color = Color.lerp(
+              PaletaRotulador.tinta,
+              PaletaRotulador.rojoEstampilla,
+              atenuacion,
+            )!,
+        );
       }
     }
 
@@ -1096,6 +1234,14 @@ class _PintorVistaDoom extends CustomPainter {
         ref: sello,
       ));
     }
+    for (final mesa in mesasDecorativas) {
+      sprites.add(_SpriteRender(
+        posX: mesa.posX,
+        posY: mesa.posY,
+        tipo: _TipoSprite.mesa,
+        ref: mesa,
+      ));
+    }
     // Calcular distancia y orden.
     for (final s in sprites) {
       final double dx = s.posX - jugadorX;
@@ -1125,8 +1271,15 @@ class _PintorVistaDoom extends CustomPainter {
       // (mismo factor que las paredes para que coexistan en escala).
       final double altoSprite = math.min(size.height * 1.2,
           distanciaProyeccion / distancia * 0.85);
+      // Ratio ancho/alto del sprite según tipo: sello casi cuadrado
+      // (proyectil compacto), mesa más ancha que alta (≈ 320×440 →
+      // ~0.73), enemigo silueta vertical (0.75).
       final double anchoSprite = altoSprite *
-          (s.tipo == _TipoSprite.sello ? 0.5 : 0.75);
+          (s.tipo == _TipoSprite.sello
+              ? 0.5
+              : s.tipo == _TipoSprite.mesa
+                  ? 0.73
+                  : 0.75);
       final Rect rectSprite = Rect.fromCenter(
         center: Offset(xPantallaCentro,
             size.height / 2 + altoSprite * 0.20),
@@ -1140,13 +1293,40 @@ class _PintorVistaDoom extends CustomPainter {
       if (distanciasBuffer[columnaBuffer] < distancia) {
         // Mucho mas cerca la pared: aun asi dibujamos por estetica.
       }
-      if (s.tipo == _TipoSprite.enemigo) {
-        _pintarSpriteBurocrata(canvas, rectSprite, s.ref as _BurocrataZombi,
-            distancia);
-      } else {
-        _pintarSpriteSello(canvas, rectSprite, distancia);
+      switch (s.tipo) {
+        case _TipoSprite.enemigo:
+          _pintarSpriteBurocrata(
+              canvas, rectSprite, s.ref as _BurocrataZombi, distancia);
+          break;
+        case _TipoSprite.sello:
+          _pintarSpriteSello(canvas, rectSprite, distancia);
+          break;
+        case _TipoSprite.mesa:
+          _pintarSpriteMesa(canvas, rectSprite, distancia);
+          break;
       }
     }
+  }
+
+  void _pintarSpriteMesa(Canvas canvas, Rect rect, double distancia) {
+    // Sin asset: no dibujamos (las mesas son cosmeticas; sin sprite no
+    // tienen representación procedural propia).
+    final ui.Image? sprite = imagenMesaBurocratica;
+    if (sprite == null) return;
+    final double atenuacion = (1.0 - (distancia / 12).clamp(0.0, 0.7));
+    final Rect rectOrigen = Rect.fromLTWH(
+      0,
+      0,
+      sprite.width.toDouble(),
+      sprite.height.toDouble(),
+    );
+    final Paint pincelImagen = Paint()
+      ..filterQuality = FilterQuality.high
+      ..colorFilter = ColorFilter.mode(
+        PaletaRotulador.papel.withValues(alpha: 1.0 - atenuacion),
+        BlendMode.srcATop,
+      );
+    canvas.drawImageRect(sprite, rectOrigen, rect, pincelImagen);
   }
 
   void _pintarSpriteBurocrata(
@@ -1269,7 +1449,28 @@ class _PintorVistaDoom extends CustomPainter {
   }
 
   void _pintarSpriteSello(Canvas canvas, Rect rect, double distancia) {
-    // Sello rojo rotando.
+    // Si el sprite §13.4 está disponible, lo usamos como billboard
+    // proyectado. Atenuación por distancia simulada en el color filter
+    // para que coexista con la perspectiva del raycasting.
+    final ui.Image? sprite = imagenSelloProyectil;
+    if (sprite != null) {
+      final double atenuacion = (1.0 - (distancia / 14).clamp(0.0, 0.7));
+      final Rect rectOrigen = Rect.fromLTWH(
+        0,
+        0,
+        sprite.width.toDouble(),
+        sprite.height.toDouble(),
+      );
+      final Paint pincelImagen = Paint()
+        ..filterQuality = FilterQuality.high
+        ..colorFilter = ColorFilter.mode(
+          PaletaRotulador.papel.withValues(alpha: 1.0 - atenuacion),
+          BlendMode.srcATop,
+        );
+      canvas.drawImageRect(sprite, rectOrigen, rect, pincelImagen);
+      return;
+    }
+    // Fallback procedural: sello rojo rotando.
     final double radio = math.min(rect.width, rect.height) * 0.4;
     canvas.drawCircle(
       rect.center,
@@ -1369,6 +1570,31 @@ class _PintorVistaDoom extends CustomPainter {
       size.width,
       alturaHud,
     );
+    // §13.5: si el HUD ilustrado está disponible, lo usamos como marco
+    // visual (sustituye fondo + bordes + remaches + casco estático +
+    // placeholder del sello + placeholder de barras procedurales). Los
+    // VALORES DINÁMICOS (número de vida, llenado de barras, número de
+    // munición) se siguen pintando encima para que la información
+    // siga viva. La cara reactiva al daño se sacrifica a favor del
+    // casco fijo de la ilustración — el flash rojo (tiempoFlashDolor)
+    // ya provee el feedback visual de impacto a pantalla completa.
+    final ui.Image? hud = imagenHudCadete;
+    if (hud != null) {
+      final Rect rectOrigen = Rect.fromLTWH(
+        0,
+        0,
+        hud.width.toDouble(),
+        hud.height.toDouble(),
+      );
+      canvas.drawImageRect(
+        hud,
+        rectOrigen,
+        rectHud,
+        Paint()..filterQuality = FilterQuality.high,
+      );
+      _pintarValoresDinamicosHud(canvas, rectHud);
+      return;
+    }
     canvas.drawRect(
       rectHud,
       Paint()..color = PaletaRotulador.papelSucio,
@@ -1534,6 +1760,109 @@ class _PintorVistaDoom extends CustomPainter {
       Offset(rectBarraMunicion.right + 10,
           rectBarraMunicion.center.dy - pintorNumeroMunicion.height / 2),
     );
+  }
+
+  /// Versión "con imagen" del HUD: la ilustración de §13.5 ya pinta el
+  /// marco, las etiquetas, el casco y los placeholders de barras. Sólo
+  /// añadimos los números dinámicos en las tres secciones (vida en la
+  /// izquierda al lado del corazón, número de munición en la derecha
+  /// junto a las barras) y el icono del sello equipado en el placeholder
+  /// circular del centro.
+  void _pintarValoresDinamicosHud(Canvas canvas, Rect rectHud) {
+    // La imagen está dividida horizontalmente en tres tercios. Mapeamos
+    // sobre el rect destino: izquierdo [0..1/3] = vida + casco;
+    // central [1/3..2/3] = sello equipado; derecho [2/3..1] = munición.
+    final double anchoTercio = rectHud.width / 3;
+    final double alturaHud = rectHud.height;
+
+    // VIDA — número grande sobre la sección izquierda (a la derecha
+    // del casco y del corazón). El color cambia con el daño.
+    final Color colorVida = vidaJugador > 55
+        ? PaletaRotulador.tinta
+        : vidaJugador > 25
+            ? PaletaRotulador.tintaDiluida(0.80)
+            : PaletaRotulador.rojoEstampilla;
+    final pintorVida = TextPainter(
+      text: TextSpan(
+        text: '$vidaJugador',
+        style: TextStyle(
+          color: colorVida,
+          fontFamily: 'CosmoMono',
+          fontSize: alturaHud * 0.42,
+          fontWeight: FontWeight.w900,
+        ),
+      ),
+      textDirection: TextDirection.ltr,
+    )..layout();
+    // Posición: aproximadamente donde la ilustración deja el "blank
+    // space" al lado del corazón. Coordenadas relativas al rect destino.
+    pintorVida.paint(
+      canvas,
+      Offset(
+        rectHud.left + anchoTercio * 0.50 - pintorVida.width / 2,
+        rectHud.top + alturaHud * 0.50 - pintorVida.height / 2,
+      ),
+    );
+
+    // MUNICIÓN — número sobre la sección derecha. Las 3 barras de la
+    // ilustración se "rellenan" superponiendo un rectángulo rojo más
+    // intenso proporcional a sellosRestantes.
+    final double fraccionMunicion = (sellosRestantes / 20).clamp(0.0, 1.0);
+    // Rect ocupado por las 3 barras dentro de la ilustración (estimado
+    // a partir del briefing §13.5 — bloque derecho, ~60% del tercio).
+    final Rect rectBarras = Rect.fromLTWH(
+      rectHud.left + anchoTercio * 2 + anchoTercio * 0.30,
+      rectHud.top + alturaHud * 0.25,
+      anchoTercio * 0.55,
+      alturaHud * 0.55,
+    );
+    // Capa de "vacío" sobre las barras al perder munición: un rect
+    // del color del papel que cubre la parte derecha proporcionalmente.
+    if (fraccionMunicion < 1.0) {
+      canvas.drawRect(
+        Rect.fromLTWH(
+          rectBarras.left + rectBarras.width * fraccionMunicion,
+          rectBarras.top,
+          rectBarras.width * (1.0 - fraccionMunicion),
+          rectBarras.height,
+        ),
+        Paint()
+          ..color = PaletaRotulador.papelSucio.withValues(alpha: 0.85),
+      );
+    }
+    final pintorMunicion = TextPainter(
+      text: TextSpan(
+        text: '$sellosRestantes',
+        style: TextStyle(
+          color: PaletaRotulador.rojoEstampilla,
+          fontFamily: 'CosmoMono',
+          fontSize: alturaHud * 0.42,
+          fontWeight: FontWeight.w900,
+        ),
+      ),
+      textDirection: TextDirection.ltr,
+    )..layout();
+    pintorMunicion.paint(
+      canvas,
+      Offset(
+        rectHud.right - anchoTercio * 0.85 - pintorMunicion.width / 2,
+        rectHud.top + alturaHud * 0.50 - pintorMunicion.height / 2,
+      ),
+    );
+
+    // SELLO EQUIPADO — punto rojo intenso dentro del placeholder circular
+    // del centro, indicando que hay sello equipado mientras quede munición.
+    if (sellosRestantes > 0) {
+      final Offset centroSelloEquipado = Offset(
+        rectHud.left + anchoTercio * 1.50,
+        rectHud.top + alturaHud * 0.55,
+      );
+      canvas.drawCircle(
+        centroSelloEquipado,
+        alturaHud * 0.14,
+        Paint()..color = PaletaRotulador.rojoEstampilla,
+      );
+    }
   }
 
   void _dibujarCaraCosmonautaHud(
@@ -1808,7 +2137,13 @@ class _PintorVistaDoom extends CustomPainter {
   bool shouldRepaint(covariant _PintorVistaDoom viejo) => true;
 }
 
-enum _TipoSprite { enemigo, sello }
+enum _TipoSprite { enemigo, sello, mesa }
+
+class _MesaDecorativa {
+  final double posX;
+  final double posY;
+  const _MesaDecorativa({required this.posX, required this.posY});
+}
 
 class _SpriteRender {
   final double posX;

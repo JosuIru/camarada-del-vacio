@@ -55,16 +55,20 @@ Verificación: `flutter analyze` y `flutter test` verdes.
 **Por qué primero estos**: el briefing los marca como "alta
 prioridad" y son los tres más visibles después del Pinball.
 
-### F2.A — Cosmoom Doom (§13, 5 sprites)
-- [ ] Generar: `doom_pared_ministerio` (512×512 tileable),
-  `doom_suelo_baldosa` (512×512 tileable XY), `doom_mesa_burocratica`
-  (320×440), `doom_sello_proyectil` (160×160),
-  `doom_hud_cadete` (800×260).
-- [x] **Infraestructura cableada (2026-05-17)**: 5 `ui.Image?`
-  añadidos al State, carga vía `cargarLoteOpcional` con fallback
-  silencioso, paso al `_PintorVistaDoom`. Render procedural sigue
-  intacto. Cuando lleguen los PNGs sólo hay que añadir las
-  llamadas `drawImageRect` en el painter (rastreado en F2-4.X).
+### F2.A — Cosmoom Doom (§13, 5 sprites) ✅
+- [x] **Assets generados (2026-05-17)**: los 5 PNGs aterrizados
+  en `assets/svg/` con dimensiones exactas del briefing. Caveat:
+  la mesa burocrática tiene perspectiva 3/4 sutil donde el briefing
+  pedía vista frontal plana — funciona como billboard.
+- [x] **Infraestructura cableada (2026-05-17)**.
+- [x] **drawImageRect aplicado (2026-05-17)**: pared (mapeo
+  Wolfenstein columna-a-columna), suelo (6 bandas con perspectiva
+  escalonada), mesa (5 billboards decorativos sin colisión),
+  sello proyectil, HUD (fondo ilustrado + valores dinámicos por
+  encima vía `_pintarValoresDinamicosHud`). Verificación pendiente:
+  comprobar visualmente con `flutter run -d chrome` que la mesa
+  no canta al rotar la cámara y que el suelo escalonado se ve
+  razonable.
 
 ### F2.B — Snow Kamarada (§14, 8 sprites)
 - [ ] Generar: 4 frames del cadete-ushanka caminando, capitalista

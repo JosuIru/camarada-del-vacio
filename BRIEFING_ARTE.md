@@ -1879,6 +1879,27 @@ animada y de papeleo**:
   frase contiene palabras clave de papeleo (F-447, expediente,
   formulario, comité, sello, papel, anota).
 
+✅ **Hecho — Cosmoom Doom (§13)** (auditoría 2026-05-17): los 5
+sprites del Doom están generados y aplicados con `drawImageRect`
+en `_PintorVistaDoom`:
+- `doom_pared_ministerio.png` (512×512 tileable): mapeo
+  Wolfenstein columna-a-columna en el raycasting.
+- `doom_suelo_baldosa.png` (512×512): suelo en 6 bandas con
+  perspectiva escalonada cuadrática.
+- `doom_mesa_burocratica.png` (320×440): sprite billboard
+  decorativo en 5 posiciones de los pasillos (sin colisión).
+- `doom_sello_proyectil.png` (160×160): sustituye al círculo
+  procedural del `_SelloVolante`.
+- `doom_hud_cadete.png` (800×260): fondo ilustrado del HUD
+  inferior; los valores dinámicos (vida, sello equipado, llenado
+  de barras de munición) se pintan encima por la función
+  `_pintarValoresDinamicosHud`. La cara reactiva al daño se
+  sacrifica a favor del casco fijo de la ilustración — el flash
+  rojo a pantalla completa sigue dando feedback de impacto.
+
+Fallback procedural intacto en todos los casos: si el asset
+desapareciera, el pintor vuelve al render geométrico anterior.
+
 ✅ **Hecho — Hotspots de la cápsula (§12)** (auditoría 2026-05-17):
 los 9 hotspots invisibles tienen ya su sprite dedicado en
 `assets/svg/capsula_*.png` y están cableados con `IconoHotspotImagen`
