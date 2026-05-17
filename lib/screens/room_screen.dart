@@ -539,8 +539,8 @@ class _PantallaSalaState extends State<PantallaSala>
             cantidadParticulas: 38,
           ),
           factorAnchoMundo: 2.0,
-          // Defaults (0.55 / 0.92) hereda del widget; el suelo del fondo
-          // de la cápsula está al ~92% del alto y los muros al ~55%.
+          bordeSuperior: 0.68,
+          bordeInferior: 0.92,
           posicionInicialJugador: const Offset(0.08, 0.86),
           puntoEntradaInicial: const Offset(-0.02, 0.86),
           puntoSalidaActiva: _puntoSalida,

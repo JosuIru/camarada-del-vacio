@@ -433,6 +433,8 @@ class _PantallaCantinaState extends State<PantallaCantina>
             cantidadParticulas: 42,
           ),
           factorAnchoMundo: 2.0,
+          bordeSuperior: 0.66,
+          bordeInferior: 0.92,
           posicionInicialJugador: const Offset(0.06, 0.88),
           puntoEntradaInicial: const Offset(-0.02, 0.88),
           puntoSalidaActiva: _puntoSalida,

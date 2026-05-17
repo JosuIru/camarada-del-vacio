@@ -408,7 +408,7 @@ class EscenarioLibre extends StatefulWidget {
     required this.hotspots,
     required this.claseJugador,
     this.rutaImagenFondo,
-    this.posicionInicialJugador = const Offset(0.1, 0.86),
+    this.posicionInicialJugador = const Offset(0.1, 0.78),
     this.puntoEntradaInicial,
     this.puntoSalidaActiva,
     this.alCompletarSalida,
@@ -424,12 +424,6 @@ class EscenarioLibre extends StatefulWidget {
     this.onPulsacionInteraccionOciosa,
     this.onCadeteQuietoLargoRato,
     this.segundosQuietudParaEvento = 4.0,
-    // Defaults restaurados a los originales tras corregir el bug raíz
-    // (BoxFit.cover recortaba el fondo, lo que desalineaba las
-    // coordenadas Y). Con BoxFit.fill las coordenadas relativas
-    // coinciden con lo dibujado: la línea del suelo está al ~92% del
-    // alto del fondo, y la pared/techo al ~55%. Si un escenario tiene
-    // su suelo a otra altura, puede seguir sobrescribiendo.
     this.bordeSuperior = 0.55,
     this.bordeInferior = 0.92,
     this.bordeIzquierdoArea = 0.05,
@@ -1428,19 +1422,11 @@ class _EscenarioLibreState extends State<EscenarioLibre>
                       child: Stack(
                         children: [
                           Positioned.fill(
-                            // `BoxFit.fill` (en vez de `cover`): el fondo
-                            // se estira para llenar exactamente
-                            // `anchoMundo × alto` sin recortar. Imprescindible
-                            // para que las coordenadas relativas (0..1) del
-                            // sistema coincidan con lo que el jugador ve.
-                            // Con `cover` el fondo quedaba recortado y la
-                            // línea visual del suelo flotaba respecto a las
-                            // coordenadas Y → cadete se subía a paredes o
-                            // flotaba según el tamaño de la ventana.
                             child: widget.rutaImagenFondo != null
                                 ? Image.asset(
                                     widget.rutaImagenFondo!,
-                                    fit: BoxFit.fill,
+                                    fit: BoxFit.cover,
+                                    alignment: Alignment.center,
                                     filterQuality: FilterQuality.high,
                                   )
                                 : CustomPaint(painter: widget.pintorFondo),
@@ -1588,14 +1574,8 @@ class _EscenarioLibreState extends State<EscenarioLibre>
                                     math.max(hotspot.anchoRelativo, 0.10);
                                 final double altoRelativoEfectivo =
                                     math.max(hotspot.altoRelativo, 0.12);
-                                // Ancho contra MUNDO para que el hotspot
-                                // escale como objeto del mundo (idéntico
-                                // razonamiento que el cadete, líneas
-                                // arriba). En escenarios sin scroll
-                                // (factorAnchoMundo=1.0) anchoMundo ==
-                                // anchoViewport, así que el cambio es no-op.
                                 final double anchoHotspot =
-                                    anchoRelativoEfectivo * anchoMundo;
+                                    anchoRelativoEfectivo * anchoViewport;
                                 final double altoHotspot =
                                     altoRelativoEfectivo * alto;
                                 return Positioned(
@@ -1690,17 +1670,15 @@ class _EscenarioLibreState extends State<EscenarioLibre>
                           // debajo, dando sensación de que el cadete
                           // flotaba sobre ella.
                           Positioned(
-                            // Sombra del cadete: ancho contra MUNDO para
-                            // que coincida con la base del sprite (que
-                            // ahora también usa anchoMundo arriba).
                             left:
                                 posicionJugador.dx * anchoMundo -
-                                (widget.anchoJugadorRelativo * anchoMundo) / 2,
+                                (widget.anchoJugadorRelativo * anchoViewport) /
+                                    2,
                             top:
                                 posicionJugador.dy * alto -
                                 widget.altoJugadorRelativo * alto * 0.03 -
                                 offsetVerticalSombraPx,
-                            width: widget.anchoJugadorRelativo * anchoMundo,
+                            width: widget.anchoJugadorRelativo * anchoViewport,
                             height: widget.altoJugadorRelativo * alto * 0.10,
                             child: IgnorePointer(
                               child: CustomPaint(
@@ -1721,7 +1699,7 @@ class _EscenarioLibreState extends State<EscenarioLibre>
                                   posicionMascota.dx * anchoMundo -
                                   (widget.mascota!.altoRelativo *
                                           0.8 *
-                                          anchoMundo) /
+                                          anchoViewport) /
                                       2,
                               // Sombra de Laika justo bajo sus patas
                               // (mismo principio que la sombra del
@@ -1730,12 +1708,10 @@ class _EscenarioLibreState extends State<EscenarioLibre>
                                   posicionMascota.dy * alto -
                                   widget.mascota!.altoRelativo * alto * 0.03 -
                                   offsetVerticalSombraPx,
-                              // Ancho contra MUNDO (igual que el sprite
-                              // del personaje arriba).
                               width:
                                   widget.mascota!.altoRelativo *
                                   0.8 *
-                                  anchoMundo,
+                                  anchoViewport,
                               height:
                                   widget.mascota!.altoRelativo * alto * 0.08,
                               child: const IgnorePointer(
@@ -1756,18 +1732,15 @@ class _EscenarioLibreState extends State<EscenarioLibre>
                                   posicionMascota.dx * anchoMundo -
                                   (widget.mascota!.altoRelativo *
                                           0.8 *
-                                          anchoMundo) /
+                                          anchoViewport) /
                                       2,
                               top:
                                   posicionMascota.dy * alto -
                                   widget.mascota!.altoRelativo * alto * 0.92,
-                              // Ancho contra MUNDO (idéntico razonamiento
-                              // que el cadete y los hotspots) para que
-                              // Laika escale con el resto de la escena.
                               width:
                                   widget.mascota!.altoRelativo *
                                   0.8 *
-                                  anchoMundo,
+                                  anchoViewport,
                               height: widget.mascota!.altoRelativo * alto,
                               child: IgnorePointer(
                                 child: _laikaDetectaRastro
@@ -1836,7 +1809,8 @@ class _EscenarioLibreState extends State<EscenarioLibre>
                           Positioned(
                             left:
                                 posicionJugador.dx * anchoMundo -
-                                (widget.anchoJugadorRelativo * anchoMundo) / 2,
+                                (widget.anchoJugadorRelativo * anchoViewport) /
+                                    2,
                             // Anclamos el peón por sus PIES: el borde
                             // inferior del rectángulo del sprite cae en
                             // `posicionJugador.dy * alto`. El stick figure
@@ -1849,13 +1823,7 @@ class _EscenarioLibreState extends State<EscenarioLibre>
                                 posicionJugador.dy * alto -
                                 widget.altoJugadorRelativo * alto * 0.89 -
                                 _alturaSaltoBolaPx(alto),
-                            // Ancho relativo al MUNDO, no al viewport: en
-                            // escenarios con scroll horizontal
-                            // (factorAnchoMundo=2.0) el cadete debe escalar
-                            // como un objeto del mundo. Si usásemos
-                            // anchoViewport, el cadete se vería la mitad
-                            // de ancho que los muebles del fondo.
-                            width: widget.anchoJugadorRelativo * anchoMundo,
+                            width: widget.anchoJugadorRelativo * anchoViewport,
                             height: widget.altoJugadorRelativo * alto,
                             child: IgnorePointer(
                               child: modoBolaActivo
