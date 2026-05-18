@@ -635,21 +635,29 @@ class _PantallaSalaState extends State<PantallaSala>
             HotspotEscenario(
               identificador: 'catre',
               posicionRelativa: const Offset(0.32, 0.84),
-              anchoRelativo: 0.10,
+              // Ratio del PNG capsula_catre.png: 400×260 = 1.54 (cama
+              // horizontal). El rect anterior (0.10×0.14 = 0.71) lo
+              // pintaba aplastado en vertical. Manteniendo altoRel,
+              // el ancho coherente con el PNG es 0.14·1.54 ≈ 0.215.
+              anchoRelativo: 0.22,
               altoRelativo: 0.14,
-              radioInteraccion: 0.08,
+              radioInteraccion: 0.10,
               representacion: const IconoHotspotImagen(
                 rutaAsset: 'assets/svg/capsula_catre.png',
-                anchoSombra: 56,
+                anchoSombra: 110,
               ),
               onInteractuar: _interactuarCatre,
             ),
             HotspotEscenario(
               identificador: 'almohada',
-              posicionRelativa: const Offset(0.30, 0.86),
-              anchoRelativo: 0.05,
+              // Reposicionada sobre la cabecera del catre nuevo (centro
+              // del catre en 0.32, almohada cerca del extremo izquierdo).
+              posicionRelativa: const Offset(0.245, 0.825),
+              // PNG mueble_almohada.png: 1536×1024 = 1.50. Antes era
+              // cuadrada (0.05×0.05 = 1.00) → recalibrada a 0.075×0.05.
+              anchoRelativo: 0.075,
               altoRelativo: 0.05,
-              radioInteraccion: 0.07,
+              radioInteraccion: 0.06,
               representacion: const IconoHotspotImagen(
                 rutaAsset: 'assets/svg/mueble_almohada.png',
                 conSombra: false,
@@ -658,15 +666,19 @@ class _PantallaSalaState extends State<PantallaSala>
             ),
             HotspotEscenario(
               identificador: 'mesilla_vela',
-              posicionRelativa: const Offset(0.45, 0.84),
-              anchoRelativo: 0.04,
+              // Desplazada un poco a la derecha para que no choque con
+              // el nuevo catre ensanchado (borde derecho del catre ~0.43).
+              posicionRelativa: const Offset(0.50, 0.83),
+              // PNG capsula_mesilla_vela.png: 220×320 = 0.69. Antes era
+              // 0.04×0.18 = 0.22 (demasiado estrecha) → recalibrada.
+              anchoRelativo: 0.12,
               altoRelativo: 0.18,
-              radioInteraccion: 0.07,
+              radioInteraccion: 0.08,
               // §12.3: el sprite nuevo incluye mesilla + vela en uno;
               // sustituye al `mueble_vela.png` anterior (sólo vela).
               representacion: const IconoHotspotImagen(
                 rutaAsset: 'assets/svg/capsula_mesilla_vela.png',
-                anchoSombra: 32,
+                anchoSombra: 60,
               ),
               onInteractuar: _interactuarMesillaVela,
             ),
@@ -740,16 +752,18 @@ class _PantallaSalaState extends State<PantallaSala>
             ),
             HotspotEscenario(
               identificador: 'archivador',
+              // Posicionada sobre la estantería de archivadores que el
+              // fondo de la cápsula YA dibuja (con etiquetas F-A2, A-2,
+              // M-7, Z-12 y "АРХИВО"). El PNG independiente duplicaba
+              // visualmente la estantería y aparecía flotando al lado.
+              // Mantiene la interacción como hotspot invisible.
               posicionRelativa: const Offset(0.875, 0.42),
               anchoRelativo: 0.07,
               altoRelativo: 0.20,
               radioInteraccion: 0.10,
               destacar: !combateResuelto,
               etiquetaAccion: combateResuelto ? 'EXAMINAR' : 'ABRIR',
-              representacion: const IconoHotspotImagen(
-                rutaAsset: 'assets/svg/archivador.png',
-                anchoSombra: 48,
-              ),
+              representacion: const SizedBox.shrink(),
               onInteractuar: _interactuarArchivador,
             ),
             // Residuo fantasmal del Funcionario Espectral de Archivo:
