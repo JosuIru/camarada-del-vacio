@@ -55,7 +55,20 @@ class _PantallaSnowKamaradaState extends State<PantallaSnowKamarada>
     Rect.fromLTRB(0.40, 0.18, 0.60, 0.22),
   ];
 
-  Offset posicionCadete = const Offset(0.50, 0.86);
+  /// Mitad del alto de la caja del cadete. La caja real es 5×radio
+  /// de alto (sprite alargado), así que la mitad son 2.5×radio.
+  static const double mitadAltoCadete = radioCadete * 2.5;
+
+  /// Y inicial: la plataforma suelo es la primera (top=0.92). Para que
+  /// los pies del cadete (centro.y + mitadAltoCadete) caigan exactamente
+  /// sobre el suelo, el centro debe estar en `0.92 - mitadAltoCadete`.
+  /// Si se hardcodea distinto (p. ej. 0.86), el cadete arranca atravesando
+  /// el suelo y el chequeo de aterrizaje falla → caída infinita.
+  static const double yInicialCadete = 0.92 - mitadAltoCadete;
+  static const Offset posicionInicialCadete =
+      Offset(0.50, yInicialCadete);
+
+  Offset posicionCadete = posicionInicialCadete;
   Offset velocidadCadete = Offset.zero;
   int direccionMiraCadete = 1;
   bool moviendoIzquierda = false;
@@ -321,7 +334,6 @@ class _PantallaSnowKamaradaState extends State<PantallaSnowKamarada>
     // de ancho), no con el radio del cuerpo: así los pies se asientan
     // sobre la plataforma en vez de quedar la plataforma a mitad del
     // cuerpo.
-    const double mitadAltoCadete = radioCadete * 2.5;
     for (final plataforma in plataformas) {
       final Rect cajaCadete = Rect.fromCenter(
         center: nuevaPos,
@@ -329,9 +341,12 @@ class _PantallaSnowKamaradaState extends State<PantallaSnowKamarada>
         height: mitadAltoCadete * 2,
       );
       if (!cajaCadete.overlaps(plataforma)) continue;
-      final double pieAnterior =
-          posicionCadete.dy + mitadAltoCadete;
-      if (velocidadCadete.dy >= 0 && pieAnterior <= plataforma.top + 0.02) {
+      // Aterrizar SIEMPRE que el cadete venga cayendo y su centro
+      // siga por encima del centro vertical de la plataforma. Esta
+      // condición tolera tunneling (dt grandes, velocidad alta) y
+      // overlap inicial sin enganchar saltos desde abajo (en esos
+      // casos velocidadCadete.dy < 0).
+      if (velocidadCadete.dy >= 0 && nuevaPos.dy < plataforma.center.dy) {
         nuevaPos = Offset(nuevaPos.dx, plataforma.top - mitadAltoCadete);
         velocidadCadete = Offset(velocidadCadete.dx, 0);
         enSuelo = true;
@@ -697,7 +712,7 @@ class _PantallaSnowKamaradaState extends State<PantallaSnowKamarada>
           tecla == LogicalKeyboardKey.space ||
           tecla == LogicalKeyboardKey.numpadEnter) {
         setState(() {
-          posicionCadete = const Offset(0.50, 0.86);
+          posicionCadete = posicionInicialCadete;
           velocidadCadete = Offset.zero;
           vidas = 3;
           puntuacion = 0;
@@ -1576,6 +1591,70 @@ class _PintorSnowKamarada extends CustomPainter {
         _PantallaSnowKamaradaState.radioCadete * size.width * 8.0;
     final bool parpadeoInvulnerable =
         tiempoInvulnerable > 0 && (tiempoInvulnerable * 12).floor().isEven;
+
+    // §14.1 — Si los 4 frames del walk-cycle ushanka están cargados,
+    // pintamos el sprite real con drawImageRect. Selección de frame:
+    // - saltando: frame fijo f02 (pass pose con bob hacia arriba)
+    // - quieto: f01 (contact pose neutra)
+    // - caminando: índice (fasePasoCadete*4).floor() % 4
+    // Aspect ratio canónico §14.1: 240×360 → ancho = alto * (240/360).
+    final List<ui.Image?> framesUshanka = <ui.Image?>[
+      imagenCadeteUshankaF01,
+      imagenCadeteUshankaF02,
+      imagenCadeteUshankaF03,
+      imagenCadeteUshankaF04,
+    ];
+    final bool todosLosFramesCargados =
+        framesUshanka.every((frame) => frame != null);
+    if (todosLosFramesCargados) {
+      final int indiceFrame;
+      if (!cadeteEnSuelo) {
+        indiceFrame = 1; // f02 pass pose, leve bob para sensación de salto
+      } else if (cadeteMoviendo) {
+        indiceFrame = (fasePasoCadete * 4).floor().abs() % 4;
+      } else {
+        indiceFrame = 0; // f01 contact pose
+      }
+      final ui.Image frameActivo = framesUshanka[indiceFrame]!;
+      final double anchoSprite = altoSprite * (240.0 / 360.0);
+      // Ancla el sprite por la base (pies en `centro`), no por el centro
+      // del rect — así coincide con el chequeo de colisión que asienta
+      // los pies en la plataforma.
+      final Rect rectDestino = Rect.fromLTWH(
+        centro.dx - anchoSprite / 2,
+        centro.dy - mitadAltoCadeteEnPx(size),
+        anchoSprite,
+        altoSprite,
+      );
+      canvas.save();
+      // Mirror horizontal según dirección de mira. Los frames están
+      // dibujados mirando a la derecha; si miramos a la izquierda
+      // (direccionMiraCadete == -1) invertimos el eje X sobre el centro.
+      if (direccionMiraCadete < 0) {
+        canvas.translate(centro.dx, 0);
+        canvas.scale(-1, 1);
+        canvas.translate(-centro.dx, 0);
+      }
+      final Paint pincelSprite = Paint()
+        ..filterQuality = FilterQuality.high;
+      if (parpadeoInvulnerable) {
+        pincelSprite.colorFilter = ColorFilter.mode(
+          Colors.white.withValues(alpha: 0.4),
+          BlendMode.modulate,
+        );
+      }
+      canvas.drawImageRect(
+        frameActivo,
+        Rect.fromLTWH(0, 0, frameActivo.width.toDouble(),
+            frameActivo.height.toDouble()),
+        rectDestino,
+        pincelSprite,
+      );
+      canvas.restore();
+      return;
+    }
+
+    // Fallback procedural (sprite ushanka todavía cargando o ausente).
     final PoseCadeteMinijuego pose;
     if (!cadeteEnSuelo) {
       pose = PoseCadeteMinijuego.saltando;
@@ -1595,6 +1674,12 @@ class _PintorSnowKamarada extends CustomPainter {
       parpadeoInvulnerable: parpadeoInvulnerable,
     );
   }
+
+  /// Mitad del alto visual del cadete en pixels, derivada del tamaño
+  /// del viewport. Coincide con el factor 5×radio del sprite real
+  /// (radioCadete*size.width*4.0).
+  double mitadAltoCadeteEnPx(Size size) =>
+      _PantallaSnowKamaradaState.radioCadete * size.width * 4.0;
 
   void _dibujarBurocrata(
       Canvas canvas, _CapitalistaEspacial burocrata, Size size) {
