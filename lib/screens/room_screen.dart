@@ -747,13 +747,19 @@ class _PantallaSalaState extends State<PantallaSala>
             ),
             HotspotEscenario(
               identificador: 'tubo_pixel',
-              posicionRelativa: const Offset(0.785, 0.85),
-              anchoRelativo: 0.05,
+              // PNG mueble_tubo.png es 887×1774 = ratio 0.50 (tubo
+              // vertical estrecho pero no extremo). Antes el rect era
+              // 0.05×0.18 = ratio 0.28 → tubo más estrecho de lo real.
+              // Separado del baúl (en 0.825): rectángulo del tubo
+              // (0.665..0.755) ya no se mete dentro del rect del baúl
+              // (0.78..0.87).
+              posicionRelativa: const Offset(0.71, 0.84),
+              anchoRelativo: 0.09,
               altoRelativo: 0.18,
               radioInteraccion: 0.10,
               representacion: const IconoHotspotImagen(
                 rutaAsset: 'assets/svg/mueble_tubo.png',
-                anchoSombra: 50,
+                anchoSombra: 70,
               ),
               onInteractuar: _interactuarTuboFontaneria,
             ),
