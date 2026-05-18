@@ -1245,14 +1245,35 @@ class _EscenarioLibreState extends State<EscenarioLibre>
     return true;
   }
 
+  /// Verdadero si el hotspot está pintado claramente por encima del
+  /// rango caminable del cadete (típicamente colgado en una pared:
+  /// retrato, calendario, espejo, intercomunicador…). En esos casos
+  /// el cadete nunca podrá acercarse "verticalmente" y la única
+  /// medida razonable de cercanía es la distancia horizontal a su
+  /// columna X.
+  bool _hotspotEnPared(HotspotEscenario hotspot) {
+    return hotspot.posicionRelativa.dy <
+        bordeSuperior - hotspot.radioInteraccion;
+  }
+
+  /// Distancia efectiva entre el cadete y un hotspot. Para hotspots
+  /// en pared usa sólo la distancia horizontal (eje X); para hotspots
+  /// del suelo, la euclidiana de toda la vida.
+  double _distanciaEfectivaAHotspot(HotspotEscenario hotspot) {
+    final diferencia = hotspot.posicionRelativa - posicionJugador;
+    if (_hotspotEnPared(hotspot)) {
+      return diferencia.dx.abs();
+    }
+    return diferencia.distance;
+  }
+
   void _intentarInteraccionDeTeclado() {
     if (destinoSalida != null) return;
     HotspotEscenario? hotspotMasCercano;
     double mejorDistancia = double.infinity;
     for (final hotspot in widget.hotspots) {
       if (hotspot.onInteractuar == null) continue;
-      final distanciaAlPeon =
-          (hotspot.posicionRelativa - posicionJugador).distance;
+      final distanciaAlPeon = _distanciaEfectivaAHotspot(hotspot);
       if (distanciaAlPeon > hotspot.radioInteraccion) continue;
       if (distanciaAlPeon < mejorDistancia) {
         mejorDistancia = distanciaAlPeon;
@@ -1267,8 +1288,16 @@ class _EscenarioLibreState extends State<EscenarioLibre>
   }
 
   Offset _puntoAdyacenteA(HotspotEscenario hotspot) {
-    final destino = hotspot.posicionRelativa;
     final origen = posicionJugador;
+    // Hotspots de pared: el cadete sólo puede acercarse caminando
+    // por el suelo. Su destino es la columna X del hotspot al nivel
+    // de altura actual del peón, no la posición exacta del hotspot
+    // (que está flotando arriba en la pared).
+    if (_hotspotEnPared(hotspot)) {
+      final destinoXPared = hotspot.posicionRelativa.dx;
+      return Offset(destinoXPared, origen.dy);
+    }
+    final destino = hotspot.posicionRelativa;
     final diferencia = destino - origen;
     final distancia = diferencia.distance;
     if (distancia <= hotspot.radioInteraccion * 0.55) return origen;
@@ -1287,8 +1316,7 @@ class _EscenarioLibreState extends State<EscenarioLibre>
     // momento. Esto evita el problema clásico de "estoy literalmente
     // encima del objeto pero tengo que hacer click dos veces porque
     // el destino calculado queda 0.5px más allá".
-    final distanciaActual =
-        (posicionJugador - hotspot.posicionRelativa).distance;
+    final distanciaActual = _distanciaEfectivaAHotspot(hotspot);
     if (distanciaActual <= hotspot.radioInteraccion) {
       hotspot.onInteractuar?.call();
       return;
@@ -1366,9 +1394,7 @@ class _EscenarioLibreState extends State<EscenarioLibre>
   }
 
   bool _esHotspotEnAlcance(HotspotEscenario hotspot) {
-    final distanciaAlPeon =
-        (hotspot.posicionRelativa - posicionJugador).distance;
-    return distanciaAlPeon <= hotspot.radioInteraccion;
+    return _distanciaEfectivaAHotspot(hotspot) <= hotspot.radioInteraccion;
   }
 
   @override
