@@ -1818,26 +1818,42 @@ class _EscenarioLibreState extends State<EscenarioLibre>
                               ),
                             ),
                           Positioned(
-                            left:
-                                posicionJugador.dx * anchoMundo -
-                                (widget.anchoJugadorRelativo * anchoMundo) / 2,
-                            // Anclamos el peón por sus PIES: el borde
-                            // inferior del rectángulo del sprite cae en
-                            // `posicionJugador.dy * alto`. El stick figure
-                            // pinta los pies al ~89% del rectángulo, así
-                            // que los pies dibujados quedan exactamente
-                            // sobre la línea lógica del jugador en lugar
-                            // de flotar (el rectángulo antes se centraba
-                            // verticalmente en dy, no se anclaba al suelo).
-                            top:
-                                posicionJugador.dy * alto -
-                                widget.altoJugadorRelativo * alto * 0.89 -
-                                _alturaSaltoBolaPx(alto),
-                            // Width contra MUNDO: consistente con sus
-                            // coordenadas X, su sombra, los hotspots y
-                            // la mascota. El sprite del cadete pasa a
-                            // escalar como objeto del mundo.
-                            width: widget.anchoJugadorRelativo * anchoMundo,
+                            // En MODO BOLA la caja pasa a ser CUADRADA del
+                            // lado = altoJugadorRelativo (~0.21·alto). El
+                            // PNG de la bola es 400×400 y dentro de la caja
+                            // estrecha vertical del peón salía o diminuta
+                            // (BoxFit.contain) o, tras F7-bis, gigante (con
+                            // Transform.scale 2.55 calibrado para la caja
+                            // original sobre anchoViewport — la duplicación
+                            // a anchoMundo en factor=2.0 la disparó). La caja
+                            // cuadrada elimina el truco de la escala y deja
+                            // que la bola tenga presencia coherente con el
+                            // alto del cadete a pie.
+                            left: modoBolaActivo
+                                ? posicionJugador.dx * anchoMundo -
+                                    (widget.altoJugadorRelativo * alto) / 2
+                                : posicionJugador.dx * anchoMundo -
+                                    (widget.anchoJugadorRelativo *
+                                            anchoMundo) /
+                                        2,
+                            // Anclamos el peón por sus PIES. El stick figure
+                            // pinta los pies al ~89% del rectángulo; la
+                            // bola, en cambio, ocupa la caja entera, así
+                            // que su base coincide con el lado inferior del
+                            // Positioned (factor 1.0, no 0.89).
+                            top: modoBolaActivo
+                                ? posicionJugador.dy * alto -
+                                    widget.altoJugadorRelativo * alto -
+                                    _alturaSaltoBolaPx(alto)
+                                : posicionJugador.dy * alto -
+                                    widget.altoJugadorRelativo * alto * 0.89 -
+                                    _alturaSaltoBolaPx(alto),
+                            // Width contra MUNDO para el peón a pie;
+                            // cuadrada en modo bola. El sprite del cadete
+                            // pasa a escalar como objeto del mundo.
+                            width: modoBolaActivo
+                                ? widget.altoJugadorRelativo * alto
+                                : widget.anchoJugadorRelativo * anchoMundo,
                             height: widget.altoJugadorRelativo * alto,
                             child: IgnorePointer(
                               child: modoBolaActivo
@@ -2159,30 +2175,23 @@ class _ImagenCadeteBolaCiclo extends StatelessWidget {
     // andar rápido el ciclo va rápido; al parar se queda quieto.
     final int indice = (progresoRodadura.floor() % 4).abs();
     final String ruta = 'assets/images/cadete_bola_f0${indice + 1}.png';
+    // El layout ahora pasa al Positioned padre una caja CUADRADA
+    // (lado = altoJugadorRelativo·alto) cuando el modo bola está
+    // activo, así que aquí basta con un Image.asset con BoxFit.contain
+    // — el sprite ocupa la caja entera sin trucos de Transform.scale,
+    // que antes provocaban tamaños desproporcionados (en factor=2.0).
+    // Al saltar inflamos ligeramente por encima del 100% de la caja
+    // para mantener el feedback de impulso.
     final Widget imagen = Image.asset(
       ruta,
       fit: BoxFit.contain,
       filterQuality: FilterQuality.high,
     );
-    // El PNG de la bola es 400×400 cuadrado, pero la caja del jugador
-    // en el escenario libre es alta y estrecha (stick figure
-    // vertical). Con BoxFit.contain dentro de esa caja la bola queda
-    // diminuta. Escalamos con Transform.scale para darle presencia
-    // sin tocar el layout del jugador (que también gestiona el flip
-    // izquierda/derecha). Al saltar se infla un poco más.
-    final double escala = enSalto ? 2.80 : 2.55;
-    // Anclamos la bola al borde INFERIOR de la caja del peón: la
-    // posición Y del jugador apunta al centro vertical del stick
-    // figure, así que sin este ajuste la bola escalada queda
-    // flotando muy por encima del suelo. Con bottomCenter, la parte
-    // baja del sprite cae a la línea de pie del cadete.
-    return Align(
+    if (!enSalto) return imagen;
+    return Transform.scale(
+      scale: 1.10,
       alignment: Alignment.bottomCenter,
-      child: Transform.scale(
-        scale: escala,
-        alignment: Alignment.bottomCenter,
-        child: imagen,
-      ),
+      child: imagen,
     );
   }
 }
