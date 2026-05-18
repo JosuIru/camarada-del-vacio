@@ -3,12 +3,22 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
+import '../datos/sellos_f447.dart';
 import '../models/game_state.dart';
 import '../widgets/propaganda_button.dart';
 import 'pintor_rotulador.dart';
 import 'sprite_cadete.dart';
 import 'utilidades_carga_sprites.dart';
 import 'widget_pausa.dart';
+
+/// Clave de inventario donde se acumula la racha de derrotas seguidas
+/// del cadete en Pixel Perdido. Se incrementa con cada derrota y se
+/// resetea al ganar. Cuando alcanza 7 otorga el Sello del Mártir.
+const String _kClaveDerrotasSeguidasPixel = 'pixel_perdido_derrotas_seguidas';
+
+/// Umbral de racha de derrotas para que el Comité otorgue el sello
+/// satírico del Mártir Burocrático.
+const int _kRachaParaSelloMartir = 7;
 
 /// COSMONAUTA DEL PÍXEL PERDIDO.
 ///
@@ -59,6 +69,10 @@ class _PantallaPixelPerdidoState extends State<PantallaPixelPerdido>
   late List<List<String>> mapaCargado;
   int kopeksRecogidos = 0;
   int kopeksTotales = 0;
+  /// Sellos F-447 que el cadete obtiene en esta sesión concreta del
+  /// minijuego. Se rellena al finalizar la partida (victoria o derrota
+  /// definitiva) y se muestra en el panel de resultados.
+  final List<SelloF447> sellosObtenidosEnEstaPartida = <SelloF447>[];
   int vidas = 3;
   bool partidaTerminada = false;
   bool partidaPausada = false;
@@ -305,6 +319,52 @@ class _PantallaPixelPerdidoState extends State<PantallaPixelPerdido>
     if (kopeksRecogidos > previo) {
       _guardarHighscorePixel(widget.estado, kopeksRecogidos);
     }
+    _otorgarSellosPorResultado();
+  }
+
+  /// Otorga los sellos F-447 del catálogo según el resultado de la
+  /// partida actual. Es idempotente: si el sello ya estaba activo, no
+  /// duplica el objeto otorgado ni vuelve a aparecer en la lista de
+  /// nuevos sellos (esa lista solo recoge sellos REALMENTE nuevos).
+  void _otorgarSellosPorResultado() {
+    final estado = widget.estado;
+    sellosObtenidosEnEstaPartida.clear();
+
+    if (partidaGanada) {
+      _intentarOtorgarSello(estado, 'sello_pixel_reformado');
+      if (kopeksTotales > 0 && kopeksRecogidos >= kopeksTotales) {
+        _intentarOtorgarSello(estado, 'sello_recolector_total');
+      }
+      // Ganar reinicia la racha de derrotas.
+      estado.inventario.remove(_kClaveDerrotasSeguidasPixel);
+    } else {
+      // Derrota: incrementar contador. Al llegar al umbral, sello
+      // satírico del Mártir Burocrático. La racha NO se resetea al
+      // recibir el sello; un usuario puede seguir cayendo y el sello
+      // sigue otorgado (idempotente).
+      final int derrotasPrevias =
+          estado.inventario[_kClaveDerrotasSeguidasPixel] ?? 0;
+      final int nuevasDerrotas = derrotasPrevias + 1;
+      estado.inventario[_kClaveDerrotasSeguidasPixel] = nuevasDerrotas;
+      if (nuevasDerrotas >= _kRachaParaSelloMartir) {
+        _intentarOtorgarSello(estado, 'sello_martir_burocratico');
+      }
+    }
+  }
+
+  /// Activa el flag del sello [idSello] y, si el sello tiene objeto
+  /// asociado, lo añade al inventario. Si el sello ya estaba activo
+  /// no hace nada (no duplica objetos). Si lo otorga por primera vez,
+  /// lo añade a `sellosObtenidosEnEstaPartida` para mostrarlo en UI.
+  void _intentarOtorgarSello(EstadoJuego estado, String idSello) {
+    if (estado.tieneFlag(idSello)) return;
+    final sello = selloPorId(idSello);
+    if (sello == null) return;
+    estado.activarFlag(idSello);
+    if (sello.idObjetoOtorgado != null) {
+      estado.anadirObjeto(sello.idObjetoOtorgado!);
+    }
+    sellosObtenidosEnEstaPartida.add(sello);
   }
 
   KeyEventResult _alEventoTeclado(FocusNode nodo, KeyEvent evento) {
@@ -401,6 +461,7 @@ class _PantallaPixelPerdidoState extends State<PantallaPixelPerdido>
               ),
                 ),
                 OverlayPausaMinijuego(visible: partidaPausada),
+                if (partidaTerminada) _construirOverlayResultados(),
               ],
             ),
           ),
@@ -571,6 +632,170 @@ class _PantallaPixelPerdidoState extends State<PantallaPixelPerdido>
               fontSize: 11,
               fontStyle: FontStyle.italic,
               color: PaletaRotulador.tinta,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Overlay modal que aparece al terminar la partida. Muestra:
+  /// - veredicto del Comité (victoria / derrota),
+  /// - kopeks recogidos y récord,
+  /// - sellos F-447 obtenidos por primera vez (con su decreto),
+  /// - acceso a reiniciar o salir.
+  Widget _construirOverlayResultados() {
+    final bool gano = partidaGanada;
+    final int derrotasAcumuladas =
+        widget.estado.inventario[_kClaveDerrotasSeguidasPixel] ?? 0;
+    return Positioned.fill(
+      child: ColoredBox(
+        color: PaletaRotulador.tinta.withValues(alpha: 0.55),
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 560),
+            child: Container(
+              margin: const EdgeInsets.symmetric(horizontal: 24),
+              padding: const EdgeInsets.all(22),
+              decoration: BoxDecoration(
+                color: PaletaRotulador.papel,
+                border: Border.all(
+                  color: gano
+                      ? PaletaRotulador.rojoEstampilla
+                      : PaletaRotulador.tinta,
+                  width: 2.2,
+                ),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    gano
+                        ? 'EXPEDIENTE Π-1 · CERRADO'
+                        : 'EXPEDIENTE Π-1 · INCOMPLETO',
+                    style: TextStyle(
+                      fontFamily: 'CosmoMono',
+                      fontSize: 16,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: 2,
+                      color: gano
+                          ? PaletaRotulador.rojoEstampilla
+                          : PaletaRotulador.tinta,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    gano
+                        ? 'El Camarada Cadete alcanza la bandera roja. '
+                            'Kopeks recogidos: $kopeksRecogidos / $kopeksTotales.'
+                        : 'Tres caídas. El Comité registra la incidencia '
+                            '(racha: $derrotasAcumuladas / $_kRachaParaSelloMartir).',
+                    style: const TextStyle(
+                      fontFamily: 'CosmoSerif',
+                      fontSize: 13,
+                      color: PaletaRotulador.tinta,
+                      height: 1.4,
+                    ),
+                  ),
+                  if (sellosObtenidosEnEstaPartida.isNotEmpty) ...[
+                    const SizedBox(height: 14),
+                    const Text(
+                      'SELLOS F-447 ARCHIVADOS',
+                      style: TextStyle(
+                        fontFamily: 'CosmoMono',
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 1.6,
+                        color: PaletaRotulador.rojoEstampilla,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    for (final sello in sellosObtenidosEnEstaPartida)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 6),
+                        child: _tarjetaSelloObtenido(sello),
+                      ),
+                  ],
+                  const SizedBox(height: 18),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      BotonPropaganda(
+                        texto: gano ? 'Volver a la cápsula' : 'Reintentar',
+                        compacto: true,
+                        onPressed: () {
+                          if (gano) {
+                            Navigator.of(context).pop();
+                          } else {
+                            setState(_cargarMapa);
+                          }
+                        },
+                      ),
+                      const SizedBox(width: 8),
+                      BotonPropaganda(
+                        texto: 'Salir',
+                        compacto: true,
+                        onPressed: () => Navigator.of(context).pop(),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _tarjetaSelloObtenido(SelloF447 sello) {
+    return Container(
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: PaletaRotulador.papelSucio,
+        border: Border.all(
+          color: sello.categoria.colorTinta,
+          width: 1.6,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                sello.tituloLargo.toUpperCase(),
+                style: TextStyle(
+                  fontFamily: 'CosmoMono',
+                  fontSize: 12,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: 1.3,
+                  color: sello.categoria.colorTinta,
+                ),
+              ),
+              Text(
+                sello.categoria.etiqueta,
+                style: TextStyle(
+                  fontFamily: 'CosmoMono',
+                  fontSize: 9,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 1.2,
+                  color: sello.categoria.colorTinta,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 4),
+          Text(
+            sello.decretoComite,
+            style: const TextStyle(
+              fontFamily: 'CosmoSerif',
+              fontSize: 11,
+              fontStyle: FontStyle.italic,
+              color: PaletaRotulador.tinta,
+              height: 1.4,
             ),
           ),
         ],
