@@ -468,16 +468,22 @@ class _PantallaTituloState extends State<PantallaTitulo>
           // 4 frames a 500ms = ciclo de 2s.
           // Huevo de pascua: pulsarla 7 veces activa el Expediente Sin
           // Filtro. Por eso se vuelve interactiva (GestureDetector).
+          // Huevo de pascua: la estrella roja pulsante encaja
+          // visualmente DENTRO del sello "СОВ. СЕКРЕТНО" derecho de la
+          // portada. Antes era 340×340 y desbordaba el sello,
+          // perforándolo. Reducida a 90×90 y reposicionada para que
+          // sustituya/refuerce la estrella pequeña ya dibujada en el
+          // sello, sin tapar otras zonas legibles.
           Positioned(
-            top: 56,
-            right: 56,
-            width: 340,
-            height: 340,
+            top: 96,
+            right: 118,
+            width: 90,
+            height: 90,
             child: GestureDetector(
               behavior: HitTestBehavior.opaque,
               onTap: _alPulsarEstrellaRoja,
               child: Opacity(
-                opacity: 0.88,
+                opacity: 0.92,
                 child: const CicloDeFrames(
                   rutasFrames: [
                     'assets/svg/estrella_pulso_f01.png',
@@ -543,19 +549,36 @@ class _PantallaTituloState extends State<PantallaTitulo>
                       ),
                     ),
                     const SizedBox(height: 8),
+                    // Tarjeta de papel detrás del texto narrativo: sin
+                    // ella el texto cae sobre los contornos de la nave
+                    // dibujada en la portada y queda ilegible (los
+                    // trazos oscuros se cruzan con las letras).
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 24),
-                      child: Text(
-                        _expedienteSinFiltroActivo
-                            ? 'EXPEDIENTE SIN FILTRO · El archivo no registrará esta partida. La estrella roja ha sido pulsada siete veces. El Comité finge no haberse enterado.'
-                            : '1962. Cuadrante Sigma. La estación Pravda-7 desapareció el miércoles que el Camarada Directorskov apretó el botón equivocado. Llegas en la Pravda-12. El F-447 es obligatorio.',
-                        textAlign: TextAlign.center,
-                        style: _expedienteSinFiltroActivo
-                            ? TipografiaPropaganda.subtitulo.copyWith(
-                                color: PaletaCosmoSovietica.rojoOficial,
-                                fontStyle: FontStyle.italic,
-                              )
-                            : TipografiaPropaganda.subtitulo,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 10),
+                        decoration: BoxDecoration(
+                          color: PaletaCosmoSovietica.papelViejo
+                              .withValues(alpha: 0.92),
+                          border: Border.all(
+                            color: PaletaCosmoSovietica.tintaNegra
+                                .withValues(alpha: 0.45),
+                            width: 1.2,
+                          ),
+                        ),
+                        child: Text(
+                          _expedienteSinFiltroActivo
+                              ? 'EXPEDIENTE SIN FILTRO · El archivo no registrará esta partida. La estrella roja ha sido pulsada siete veces. El Comité finge no haberse enterado.'
+                              : '1962. Cuadrante Sigma. La estación Pravda-7 desapareció el miércoles que el Camarada Directorskov apretó el botón equivocado. Llegas en la Pravda-12. El F-447 es obligatorio.',
+                          textAlign: TextAlign.center,
+                          style: _expedienteSinFiltroActivo
+                              ? TipografiaPropaganda.subtitulo.copyWith(
+                                  color: PaletaCosmoSovietica.rojoOficial,
+                                  fontStyle: FontStyle.italic,
+                                )
+                              : TipografiaPropaganda.subtitulo,
+                        ),
                       ),
                     ),
                     const SizedBox(height: 24),

@@ -557,9 +557,13 @@ class _PantallaSalaState extends State<PantallaSala>
             // ─── Zona A · Plataforma aterrizaje (0.00 – 0.20) ───
             HotspotEscenario(
               identificador: 'capsula',
-              posicionRelativa: const Offset(0.08, 0.65),
-              anchoRelativo: 0.14,
-              altoRelativo: 0.50,
+              // PNG capsula.png es 1254×1254 (ratio 1.0). Antes el rect
+              // era 0.14×0.50 → ratio 0.28 vertical-extremo y altura
+              // media pantalla. Reescalado a cuadrado proporcional al
+              // resto de muebles del suelo.
+              posicionRelativa: const Offset(0.08, 0.78),
+              anchoRelativo: 0.18,
+              altoRelativo: 0.22,
               radioInteraccion: 0.12,
               representacion: const IconoHotspotImagen(
                 rutaAsset: 'assets/svg/capsula.png',
