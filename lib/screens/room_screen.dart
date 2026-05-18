@@ -654,9 +654,12 @@ class _PantallaSalaState extends State<PantallaSala>
             ),
             HotspotEscenario(
               identificador: 'almohada',
-              // Reposicionada sobre la cabecera del catre nuevo (centro
-              // del catre en 0.32, almohada cerca del extremo izquierdo).
-              posicionRelativa: const Offset(0.245, 0.825),
+              // Cabecera DERECHA del catre (centro del catre 0.32,
+              // ancho 0.22 → borde derecho 0.43). El extremo izquierdo
+              // (~0.245) colisionaba visualmente con el samovar/cafetera
+              // que está en 0.24 con ancho 0.06, dando sensación de
+              // almohada flotando sobre la cafetera en lugar del catre.
+              posicionRelativa: const Offset(0.39, 0.82),
               // PNG mueble_almohada.png: 1536×1024 = 1.50. Antes era
               // cuadrada (0.05×0.05 = 1.00) → recalibrada a 0.075×0.05.
               anchoRelativo: 0.075,
