@@ -361,8 +361,14 @@ class _PantallaPlanetaPravda7State extends State<PantallaPlanetaPravda7>
             cantidadParticulas: 75,
           ),
           factorAnchoMundo: 2.2,
-          posicionInicialJugador: const Offset(0.06, 0.86),
-          puntoEntradaInicial: const Offset(-0.02, 0.86),
+          // Pasillo interior: horizonte del suelo en dy≈0.62 (fondo del
+          // túnel) y suelo caminable extendido hasta el borde inferior.
+          // Sin estos valores el cadete subía por el techo (default 0.55)
+          // y dejaba ~8% de suelo desperdiciado abajo (default 0.92).
+          bordeSuperior: 0.62,
+          bordeInferior: 0.96,
+          posicionInicialJugador: const Offset(0.06, 0.90),
+          puntoEntradaInicial: const Offset(-0.02, 0.90),
           onCodigoSecreto: _alCodigoSecretoMundoLibre,
           onCadeteQuietoLargoRato: _alCadeteQuietoLargoRato,
           hotspots: [

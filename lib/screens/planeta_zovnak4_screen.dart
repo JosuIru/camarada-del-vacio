@@ -393,8 +393,12 @@ class _PantallaPlanetaZovnak4State extends State<PantallaPlanetaZovnak4>
             cantidadParticulas: 80,
           ),
           factorAnchoMundo: 2.4,
-          posicionInicialJugador: const Offset(0.08, 0.86),
-          puntoEntradaInicial: const Offset(-0.03, 0.86),
+          // Desierto agrietado: horizonte en dy≈0.70 (base de las
+          // pirámides), suelo agrietado caminable hasta abajo.
+          bordeSuperior: 0.70,
+          bordeInferior: 0.96,
+          posicionInicialJugador: const Offset(0.08, 0.90),
+          puntoEntradaInicial: const Offset(-0.03, 0.90),
           puntoSalidaActiva: _puntoSalida,
           onCodigoSecreto: _alCodigoSecretoMundoLibre,
           alCompletarSalida: () {

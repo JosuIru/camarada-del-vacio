@@ -371,8 +371,12 @@ class _PantallaPlanetaGelida9State extends State<PantallaPlanetaGelida9>
             cantidadParticulas: 95,
           ),
           factorAnchoMundo: 2.5,
-          posicionInicialJugador: const Offset(0.05, 0.88),
-          puntoEntradaInicial: const Offset(-0.02, 0.88),
+          // Tundra exterior: horizonte en dy≈0.68 (línea de horizonte
+          // del fondo), suelo nevado caminable hasta abajo.
+          bordeSuperior: 0.68,
+          bordeInferior: 0.96,
+          posicionInicialJugador: const Offset(0.05, 0.90),
+          puntoEntradaInicial: const Offset(-0.02, 0.90),
           puntoSalidaActiva: _puntoSalida,
           onCodigoSecreto: _alCodigoSecretoMundoLibre,
           onPulsacionInteraccionOciosa: _alPulsacionInteraccionOciosa,

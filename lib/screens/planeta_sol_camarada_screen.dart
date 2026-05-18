@@ -404,8 +404,12 @@ class _PantallaPlanetaSolCamaradaState
             cantidadParticulas: 85,
           ),
           factorAnchoMundo: 2.5,
-          posicionInicialJugador: const Offset(0.06, 0.86),
-          puntoEntradaInicial: const Offset(-0.02, 0.86),
+          // Llanura administrativa: horizonte alto en dy≈0.78 (base de
+          // los domos), suelo agrietado caminable hasta abajo.
+          bordeSuperior: 0.78,
+          bordeInferior: 0.96,
+          posicionInicialJugador: const Offset(0.06, 0.92),
+          puntoEntradaInicial: const Offset(-0.02, 0.92),
           puntoSalidaActiva: _puntoSalida,
           onCodigoSecreto: _alCodigoSecretoMundoLibre,
           onCadeteQuietoLargoRato: _alCadeteQuietoLargoRato,
