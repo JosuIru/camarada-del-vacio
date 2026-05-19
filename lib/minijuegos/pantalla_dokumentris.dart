@@ -3,6 +3,7 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
+import '../datos/otorgador_sellos.dart';
 import '../models/game_state.dart';
 import '../theme.dart';
 import '../widgets/propaganda_button.dart';
@@ -331,6 +332,8 @@ class _PantallaDokumentrisState extends State<PantallaDokumentris>
       ultimoBorradoFueCuadruple = cantidadBorradas >= 4;
     });
     if (cantidadBorradas >= 4) {
+      OtorgadorSellos.intentarOtorgar(
+          widget.estado, 'sello_dokumentris_cascada');
       _mostrarMensajePropaganda('★ DOKUMENTRIS OFICIAL ★\nCUOTA TRIPLICADA');
     } else if (nivel > nivelAnterior) {
       _mostrarMensajePropaganda(
@@ -449,6 +452,17 @@ class _PantallaDokumentrisState extends State<PantallaDokumentris>
     if (puntuacion > prev) {
       _guardarHighscore(widget.estado, puntuacion);
     }
+    // Sellos del game over:
+    // - Δm-1 Tramitador Eficiente: si limpió al menos una fila antes de
+    //   perder, el papeleo se considera tramitado.
+    // - Δm-3 Atasco de Papeleo: siempre que la partida termina (que es
+    //   por tablero lleno, no por victoria), satíricamente otorgado.
+    if (filasBorradas > 0) {
+      OtorgadorSellos.intentarOtorgar(
+          widget.estado, 'sello_dokumentris_tramitador');
+    }
+    OtorgadorSellos.intentarOtorgar(
+        widget.estado, 'sello_dokumentris_atasco');
   }
 
   KeyEventResult _alEventoTeclado(FocusNode nodo, KeyEvent evento) {

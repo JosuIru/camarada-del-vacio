@@ -3,6 +3,7 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
+import '../datos/otorgador_sellos.dart';
 import '../models/game_state.dart';
 import '../widgets/propaganda_button.dart';
 import '../widgets/breathing_stick_figure.dart';
@@ -50,6 +51,12 @@ class _PantallaFrecuencia747State extends State<PantallaFrecuencia747>
 
   /// Estacion sintonizada en este momento (si la hay).
   _EstacionSecreta? estacionEnganchada;
+  /// Segundos acumulados sin estación enganchada en la sesión actual.
+  /// Umbral 60s → Sello Ψ-3 Ruido Blanco.
+  double segundosSinEngancharSesion = 0.0;
+  /// Marcado a true cuando se otorga el sello para no recalcularlo en
+  /// cada tick.
+  bool selloEstaticaYaOtorgado = false;
 
   /// Texto que va llegando como teletipo cuando hay enganche.
   String textoTeletipo = '';
@@ -177,6 +184,17 @@ class _PantallaFrecuencia747State extends State<PantallaFrecuencia747>
 
     faseTickRadio = (faseTickRadio + dt) % 1000.0;
 
+    // Ψ-3 Ruido Blanco: acumula segundos sin engancharse a ninguna
+    // estación. Al cruzar el umbral, otorga el sello una vez.
+    if (estacionEnganchada == null) {
+      segundosSinEngancharSesion += dt;
+      if (!selloEstaticaYaOtorgado && segundosSinEngancharSesion >= 60.0) {
+        OtorgadorSellos.intentarOtorgar(
+            widget.estado, 'sello_estatica_eterna');
+        selloEstaticaYaOtorgado = true;
+      }
+    }
+
     final double pasoEnUso = modoFino ? pasoFinoTeclado : pasoGruesoTeclado;
     final double velocidadDial = pasoEnUso * 6.0;
 
@@ -249,6 +267,17 @@ class _PantallaFrecuencia747State extends State<PantallaFrecuencia747>
       acumuladorTeletipo = 0;
       if (nuevaEstacion != null) {
         widget.estado.activarFlag(nuevaEstacion.flag);
+        // Ψ-1 Sintonizador Fiel: cualquier estación sintonizada.
+        OtorgadorSellos.intentarOtorgar(
+            widget.estado, 'sello_frecuencia_sintonizador');
+        // Ψ-2 Verdad Recibida: si todas las estaciones tienen su flag,
+        // el cadete las ha escuchado todas en algún momento.
+        final bool todasSintonizadas = estaciones
+            .every((est) => widget.estado.tieneFlag(est.flag));
+        if (todasSintonizadas) {
+          OtorgadorSellos.intentarOtorgar(
+              widget.estado, 'sello_frecuencia_verdad_recibida');
+        }
       }
     }
   }

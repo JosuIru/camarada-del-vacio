@@ -3,6 +3,8 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
+import '../datos/otorgador_sellos.dart';
+import '../datos/sellos_f447.dart';
 import '../models/game_state.dart';
 import '../widgets/propaganda_button.dart';
 import 'pintor_rotulador.dart';
@@ -64,6 +66,17 @@ class _PantallaSuperPangGalacticoState extends State<PantallaSuperPangGalactico>
 
   // HUD.
   int vidas = 3;
+  /// Globos destruidos en la sesión actual (acumulado todas las
+  /// subdivisiones). Umbral 10 = Sello Γ-1 Pinchador.
+  int globosDestruidosEstaPartida = 0;
+  /// True si el cadete no ha perdido ninguna vida en toda la sesión.
+  bool sesionPangSinMorir = true;
+  /// Contador de derrotas seguidas para el sello satírico del Mártir.
+  /// Persiste en EstadoJuego.inventario entre partidas.
+  static const String _kClaveDerrotasPang = 'pang_derrotas_seguidas';
+  static const int _kRachaParaMartirPang = 3;
+  /// Sellos otorgados en la sesión actual (para futuro overlay).
+  final List<SelloF447> sellosObtenidosEnEstaPartida = <SelloF447>[];
   int puntos = 0;
   int nivelActual = 1;
   bool partidaPausada = false;
@@ -309,6 +322,7 @@ class _PantallaSuperPangGalacticoState extends State<PantallaSuperPangGalactico>
         if (distancia < globo.radio + radioCadete * 1.4) {
           vidas -= 1;
           tiempoInvulnerable = 2.0;
+          sesionPangSinMorir = false;
           if (vidas <= 0) {
             partidaTerminada = true;
             partidaGanada = false;
@@ -340,6 +354,11 @@ class _PantallaSuperPangGalacticoState extends State<PantallaSuperPangGalactico>
     final int puntosGanados = (4 - tamano) * 50;
     puntos += puntosGanados;
     globos.remove(globo);
+    globosDestruidosEstaPartida++;
+    if (globosDestruidosEstaPartida >= 10) {
+      OtorgadorSellos.intentarOtorgar(
+          widget.estado, 'sello_pang_pinchador');
+    }
     if (tamano > 0) {
       // Divide en 2 globos del tamaño inmediatamente menor: uno a
       // cada lado, con la velocidad horizontal espejada.
@@ -376,6 +395,9 @@ class _PantallaSuperPangGalacticoState extends State<PantallaSuperPangGalactico>
       partidaTerminada = false;
       partidaGanada = false;
       partidaPausada = false;
+      globosDestruidosEstaPartida = 0;
+      sesionPangSinMorir = true;
+      sellosObtenidosEnEstaPartida.clear();
       _generarNivel();
     });
   }
@@ -398,6 +420,35 @@ class _PantallaSuperPangGalacticoState extends State<PantallaSuperPangGalactico>
         (flag) => flag.startsWith(_flagHighscore),
       );
       widget.estado.activarFlag('$_flagHighscore$puntos');
+    }
+    _otorgarSellosPangPorResultado();
+  }
+
+  /// Sellos F-447:
+  /// - Γ-2 Arponero Soviético: ganar SIN perder ninguna vida.
+  /// - Γ-3 Mártir Inflado: perder 3 partidas seguidas (racha guardada
+  ///   en EstadoJuego.inventario entre partidas).
+  /// Γ-1 Pinchador se otorga inline al destruir el globo nº 10.
+  void _otorgarSellosPangPorResultado() {
+    final estado = widget.estado;
+    sellosObtenidosEnEstaPartida.clear();
+    if (partidaGanada && sesionPangSinMorir) {
+      final s = OtorgadorSellos.intentarOtorgar(
+          estado, 'sello_pang_arponero');
+      if (s != null) sellosObtenidosEnEstaPartida.add(s);
+    }
+    if (partidaGanada) {
+      // Ganar reinicia la racha de derrotas.
+      estado.inventario.remove(_kClaveDerrotasPang);
+    } else {
+      final int previas = estado.inventario[_kClaveDerrotasPang] ?? 0;
+      final int nuevas = previas + 1;
+      estado.inventario[_kClaveDerrotasPang] = nuevas;
+      if (nuevas >= _kRachaParaMartirPang) {
+        final s = OtorgadorSellos.intentarOtorgar(
+            estado, 'sello_pang_martir_inflado');
+        if (s != null) sellosObtenidosEnEstaPartida.add(s);
+      }
     }
   }
 

@@ -3,6 +3,8 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
+import '../datos/otorgador_sellos.dart';
+import '../datos/sellos_f447.dart';
 import '../models/game_state.dart';
 import '../widgets/propaganda_button.dart';
 import 'pintor_rotulador.dart';
@@ -64,6 +66,10 @@ class _PantallaCamaradaInvasorsState extends State<PantallaCamaradaInvasors>
   double faseAnimacionNaveBonus = 0;
 
   int vidas = 3;
+  /// Tíos Sam abatidos en esta sesión — umbral 3 = Sello Alto Mando.
+  int tiosSamDerrotadosEstaPartida = 0;
+  /// Lista de sellos otorgados en la sesión actual (para overlay).
+  final List<SelloF447> sellosObtenidosEnEstaPartida = <SelloF447>[];
   int puntuacion = 0;
   int oleadaActual = 1;
   bool partidaTerminada = false;
@@ -363,6 +369,9 @@ class _PantallaCamaradaInvasorsState extends State<PantallaCamaradaInvasors>
       // Yanki impactado.
       for (final invasor in List<_InvasorYanki>.from(flota)) {
         if ((invasor.posicion - disparo.posicion).distance < 0.03) {
+          if (invasor.tipo == _TipoInvasor.tioSam) {
+            tiosSamDerrotadosEstaPartida++;
+          }
           flota.remove(invasor);
           disparosCadete.remove(disparo);
           puntuacion += invasor.puntos;
@@ -406,6 +415,28 @@ class _PantallaCamaradaInvasorsState extends State<PantallaCamaradaInvasors>
     if (puntuacion > previo) {
       _guardarHighscoreInvasors(widget.estado, puntuacion);
     }
+    _otorgarSellosPorResultado();
+  }
+
+  /// Otorga sellos F-447 según resultado:
+  /// - Δ-1 Defensor Bunker: al ganar.
+  /// - Δ-2 Alto Mando: si tres o más Tíos Sam abatidos esta partida
+  ///   (acumulable entre partidas no, solo se otorga la primera vez).
+  /// Δ-3 Comelón Forzoso pendiente: requiere rastrear el tipo de
+  /// proyectil que mata al cadete (TODO en próxima iteración).
+  void _otorgarSellosPorResultado() {
+    final estado = widget.estado;
+    sellosObtenidosEnEstaPartida.clear();
+    if (partidaGanada) {
+      final s1 = OtorgadorSellos.intentarOtorgar(
+          estado, 'sello_invasors_defensa_bunker');
+      if (s1 != null) sellosObtenidosEnEstaPartida.add(s1);
+    }
+    if (tiosSamDerrotadosEstaPartida >= 3) {
+      final s2 = OtorgadorSellos.intentarOtorgar(
+          estado, 'sello_invasors_alto_mando');
+      if (s2 != null) sellosObtenidosEnEstaPartida.add(s2);
+    }
   }
 
   void _resetear() {
@@ -423,6 +454,8 @@ class _PantallaCamaradaInvasorsState extends State<PantallaCamaradaInvasors>
       partidaGanada = false;
       naveBonusActiva = false;
       tiempoHastaSiguienteNaveBonus = 14.0;
+      tiosSamDerrotadosEstaPartida = 0;
+      sellosObtenidosEnEstaPartida.clear();
       _generarFlota();
       _generarBunkers();
     });
