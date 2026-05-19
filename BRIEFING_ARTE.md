@@ -3707,6 +3707,128 @@ overlay aparte (no parte del painter).
 
 ---
 
+## 22. Plano interior de la Pravda-12 · mapa de módulos (prioridad media)
+
+> **Estilo**: blueprint soviético sobre papel viejo manchado. Vista
+> CENITAL (top-down, no isométrica), tinta negra gruesa, acentos
+> rojos sólo para sellos y rotulación oficial. Misma identidad
+> "West of Loathing" que el resto del juego — minimalista, silueta
+> clara, sin perspectiva, sin personajes.
+
+### 22.1 Fondo del overworld interior (`fondo_pravda12_interior.png`, 1920×1080)
+
+**Uso**: capa de fondo en `PantallaMapaOverworld` (cableado en
+`lib/screens/overworld_map_screen.dart`, línea 269 — sustituye al
+actual `fondo_overworld.png` que es el mapa estelar interplanetario).
+El `PintorMapaOverworld` procedural sigue como capa SUPERIOR para
+las animaciones runtime (módulos pulsantes, ruta marcada, indicador
+de ubicación actual).
+
+### Posición canónica de los 6 módulos (coordenadas relativas 0..1)
+
+Las coordenadas deben coincidir EXACTAMENTE con las declaradas en
+`lib/painters/overworld_map_painter.dart` (`modulosPravda12`) para
+que los hotspots clicables del painter procedural caigan sobre los
+módulos dibujados en el PNG:
+
+| Identificador | x | y | tamaño w×h | Forma | Etiqueta runtime |
+|---|---|---|---|---|---|
+| capsula | 0.08 | 0.50 | 0.07×0.13 | óvalo | CÁPSULA DE LLEGADA |
+| cantina | 0.33 | 0.50 | 0.13×0.15 | rectángulo | CANTINA DEL OLVIDO |
+| camarotes | 0.60 | 0.28 | 0.10×0.12 | rectángulo | CAMAROTES |
+| propaganda | 0.60 | 0.74 | 0.10×0.12 | rectángulo | SALA DE PROPAGANDA |
+| reactor | 0.78 | 0.50 | 0.12×0.18 | rectángulo grande | SALA DEL REACTOR |
+| yuriovka (compuerta) | 0.94 | 0.50 | 0.07×0.16 | óvalo sellado | COMPUERTA · PRAVDA-7 |
+
+### Pasillos de conexión
+
+- Horizontal principal: cápsula → cantina → reactor → compuerta
+  (atraviesa el centro vertical y=0.50).
+- Vertical desde cantina: arriba a camarotes (y 0.50 → 0.28), abajo
+  a propaganda (y 0.50 → 0.74).
+- Sin más bifurcaciones — el plano debe leerse a primera vista.
+
+### Prompt canónico (inglés)
+
+```
+Hand-drawn West-of-Loathing style technical blueprint of the
+interior of a Soviet space station called PRAVDA-12, top-down floor
+plan view, ink on aged cream paper (#F5F1E8), thick black ink lines
+(#15110D), red Soviet accents (#C8102E) only for stamps and labels.
+Six interconnected modules arranged horizontally:
+
+1. Far left: a small CIRCULAR docking pod "КАПСУЛА" with a
+   provisional airlock hatch attached.
+2. Left-center: a medium horizontal rectangle "СТОЛОВАЯ" (cantina)
+   with insinuated chairs and tables.
+3. Upper center: a medium rectangle "КАЮТЫ" (sleeping quarters)
+   with insinuated bunks.
+4. Lower center: a medium rectangle "ПРОПАГАНДА" with an
+   insinuated microphone and loudspeaker.
+5. Right-center: a LARGER octagonal "РЕАКТОР" reactor room with a
+   circular core in the middle.
+6. Far right: a CIRCULAR sealed hatch "ВЫХОД · ПРАВДА-7" with
+   three red wax-stamp seals on it.
+
+Horizontal corridor connecting left-to-right through modules
+1→2→center→5→6, plus two short vertical corridors from cantina (2)
+to quarters (3, up) and to propaganda (4, down). Thick ink walls,
+small rivets, hatch icons at junctions.
+
+Surrounding the floor plan, blueprint margin decorations:
+- Exterior pipes wrapping around outside.
+- Two small radio antennas on the upper corners of the station hull.
+- A small hammer-and-sickle stamp in the bottom-left corner.
+- A red rectangular bureaucratic seal in the upper-right corner
+  that reads "АРХИВ F-447 · ДЕЛО Т-12".
+- A faint technical grid background.
+- Margin ruler marks along bottom edge.
+
+Style: Two-color (black ink + Soviet red), West of Loathing
+minimalist silhouettes, no text inside the modules (labels will be
+added in code over the image), no characters, no NPCs, no 3D, no
+perspective — flat top-down architectural blueprint.
+Aspect ratio 16:9, 1920×1080.
+```
+
+### Prompt negativo (para SD/Comfy)
+
+```
+no perspective, no 3d, no characters, no people, no isometric view,
+no photoreal, no rendering, no labels inside modules, no color other
+than black and Soviet red, no rough sketch lines, no watercolor
+```
+
+### Lo que NO debe llevar el PNG
+
+- **Etiquetas de texto dentro de los módulos**: las pinta el
+  `PintorMapaOverworld` en runtime con la `etiqueta` de cada
+  `ConfiguracionModuloMapa`.
+- **Indicadores de "destino" / "ubicación actual" / "módulo
+  destacado"**: animaciones runtime sobre el painter procedural.
+- **Personajes o NPCs**: el cadete sólo aparece como el indicador
+  de ubicación animado del painter.
+- **Rosa cardinal o cabecera de plano**: las pinta el painter
+  (`_pintarRosaCardinal`, `_pintarCabeceraMapa`).
+
+### Cableado
+
+Tras guardar el PNG en `assets/images/fondo_pravda12_interior.png`,
+sustituir en `lib/screens/overworld_map_screen.dart`:
+
+```dart
+image: AssetImage('assets/images/fondo_overworld.png'),
+// →
+image: AssetImage('assets/images/fondo_pravda12_interior.png'),
+```
+
+El painter procedural queda intacto. Si las posiciones del PNG no
+casan exactamente con las coordenadas de `modulosPravda12`,
+ajustar las coords del painter (no del PNG) — el painter es la
+fuente de verdad de dónde están los hotspots clicables.
+
+---
+
 ## Resumen del briefing completo
 
 Tras los seis sprints de documentación, el briefing incluye los
@@ -3727,6 +3849,7 @@ prompts para **~70 sprites** distribuidos en 19 secciones:
 | 19 | Dokumentris (8) | Documentado |
 | 20 | Transformaciones del cadete (2 nuevos + 4 reusables) | Documentado |
 | 21 | Super Pang Galáctico (5) | Documentado |
+| 22 | Plano interior Pravda-12 (1 fondo) | Documentado |
 
 Todos los PNGs documentados respetan: paleta paper+ink+red
 estricta, trazo trembling double-pass, silueta clara, dimensiones
