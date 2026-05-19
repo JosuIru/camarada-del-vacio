@@ -9,6 +9,7 @@ import '../minijuegos/pantalla_transformacion.dart';
 import '../models/game_class.dart';
 import '../models/game_state.dart';
 import '../theme.dart';
+import 'pantalla_archivo_sellos.dart';
 import '../utilities/page_transitions.dart';
 import '../utilities/persistencia_partida.dart';
 import '../widgets/ambient_particles.dart';
@@ -138,6 +139,14 @@ class _PantallaSalaState extends State<PantallaSala>
     await mostrarDialogoInventario(context, estado: widget.estado);
     if (!mounted) return;
     setState(() {});
+  }
+
+  void _abrirArchivoSellos() {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => PantallaArchivoSellos(estado: widget.estado),
+      ),
+    );
   }
 
   void _registrar(String texto) {
@@ -1003,6 +1012,14 @@ class _PantallaSalaState extends State<PantallaSala>
                   texto: 'Inventario',
                   compacto: true,
                   onPressed: _abrirInventario,
+                ),
+              ),
+              const SizedBox(width: 6),
+              Expanded(
+                child: BotonPropaganda(
+                  texto: 'Archivo F-447',
+                  compacto: true,
+                  onPressed: _abrirArchivoSellos,
                 ),
               ),
               const SizedBox(width: 6),

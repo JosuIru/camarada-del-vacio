@@ -42,24 +42,69 @@ class _PantallaPixelPerdidoState extends State<PantallaPixelPerdido>
   static const int filasMapa = 14;
   // # bloque solido, . aire, * kopek rojo, X mancha tinta, F bandera fin,
   // P punto inicial.
-  // Diseñado para ser SIEMPRE jugable: la fila 11 es suelo solido sin
-  // huecos letales en el camino principal, los huecos con tinta tienen
-  // siempre una plataforma de 2 bloques antes para poder saltarlos.
-  static const List<String> trazadoMapa = <String>[
-    '....................................',
-    '....................................',
-    '..........*..............*..........',
-    '.........###............###.........',
-    '....................................',
-    '..*.........*..........*.........*..',
-    '..##........##.........##.......##..',
-    '....................................',
-    '............*.........*.............',
-    '...####....####......####....####...',
-    '..P..........................F......',
-    '##########X##########X##########X###',
-    '####################################',
-    '####################################',
+
+  /// Tres niveles de dificultad creciente. Cada cadena debe medir
+  /// exactamente [columnasMapa] caracteres y la lista [filasMapa].
+  /// Cada nivel debe incluir UN 'P' (spawn) y UN 'F' (meta).
+  ///
+  /// Π-I (introducción): plataformas amplias, una sola altura, tres
+  /// charcos en la fila 11 pero todos saltables.
+  /// Π-II (intermedio): subidas en zigzag, más charcos por fila, gaps
+  /// que requieren saltos consecutivos.
+  /// Π-III (avanzado): plataformas pequeñas con kopeks aislados,
+  /// charcos casi cada 3 columnas, requiere coordinar caída + salto.
+  static const List<List<String>> nivelesPixelPerdido = <List<String>>[
+    // ─────────── NIVEL 1 ── Π-I · Reseña de Adaptación ───────────
+    <String>[
+      '....................................',
+      '....................................',
+      '..........*..............*..........',
+      '.........###............###.........',
+      '....................................',
+      '..*.........*..........*.........*..',
+      '..##........##.........##.......##..',
+      '....................................',
+      '............*.........*.............',
+      '...####....####......####....####...',
+      '..P..........................F......',
+      '##########X##########X##########X###',
+      '####################################',
+      '####################################',
+    ],
+    // ──────── NIVEL 2 ── Π-II · Tránsito Reglamentario ────────
+    <String>[
+      '....................................',
+      '....................................',
+      '......*.................*...........',
+      '.....###...............###..........',
+      '....................................',
+      '.............*.................*....',
+      '............####...............####.',
+      '....................................',
+      '...*.................*..............',
+      '...####.............####............',
+      '..P............................F....',
+      '#####X#####X#####X#####X######X#####',
+      '####################################',
+      '####################################',
+    ],
+    // ──────── NIVEL 3 ── Π-III · Auditoría de Píxel ────────
+    <String>[
+      '....................................',
+      '....*........*...........*..........',
+      '...###......###.........###.........',
+      '....................................',
+      '..*..............*.......*..........',
+      '.###............###......###........',
+      '..............*.....................',
+      '..*.........####....................',
+      '.###...........................####.',
+      '.................*..................',
+      '..P............................F....',
+      '###X###X##X##X###X####X###X###X###X#',
+      '####################################',
+      '####################################',
+    ],
   ];
 
   late Ticker tickerJuego;
@@ -69,6 +114,17 @@ class _PantallaPixelPerdidoState extends State<PantallaPixelPerdido>
   late List<List<String>> mapaCargado;
   int kopeksRecogidos = 0;
   int kopeksTotales = 0;
+  /// Índice del nivel actual dentro de [nivelesPixelPerdido].
+  int nivelActual = 0;
+  /// Suma acumulada de kopeks recogidos a lo largo de TODOS los niveles
+  /// completados en la sesión actual. Se compara contra la suma de
+  /// kopeksTotales por nivel para decidir el Sello del Recolector.
+  int kopeksAcumuladosSesion = 0;
+  /// Suma acumulada de kopeksTotales esperados (todos los niveles).
+  int kopeksTotalesSesion = 0;
+  /// True si el cadete ha completado los niveles sin perder ni una vida
+  /// en toda la sesión. Pre-requisito para el Sello del Topógrafo.
+  bool sesionSinMorir = true;
   /// Sellos F-447 que el cadete obtiene en esta sesión concreta del
   /// minijuego. Se rellena al finalizar la partida (victoria o derrota
   /// definitiva) y se muestra en el panel de resultados.
@@ -133,12 +189,28 @@ class _PantallaPixelPerdidoState extends State<PantallaPixelPerdido>
     super.dispose();
   }
 
-  void _cargarMapa() {
+  /// Carga el nivel [nivelActual] en `mapaCargado`. Si [reiniciarSesion]
+  /// es true (modo "empezar de cero" tras derrota o pulsar reintentar),
+  /// resetea acumulados, vidas y vuelve al nivel 0. Si es false, mantiene
+  /// los acumulados (modo "avancé de nivel tras ganar el anterior").
+  void _cargarMapa({bool reiniciarSesion = true}) {
+    if (reiniciarSesion) {
+      nivelActual = 0;
+      kopeksAcumuladosSesion = 0;
+      kopeksTotalesSesion = 0;
+      sesionSinMorir = true;
+      vidas = 3;
+    } else {
+      // Avance entre niveles: acumular lo que se llevaba del nivel
+      // anterior antes de reescribir el mapa.
+      kopeksAcumuladosSesion += kopeksRecogidos;
+    }
+    final List<String> trazado = nivelesPixelPerdido[nivelActual];
     mapaCargado = List<List<String>>.generate(
       filasMapa,
       (fila) => List<String>.generate(
         columnasMapa,
-        (columna) => trazadoMapa[fila][columna],
+        (columna) => trazado[fila][columna],
       ),
     );
     kopeksRecogidos = 0;
@@ -155,7 +227,7 @@ class _PantallaPixelPerdidoState extends State<PantallaPixelPerdido>
         }
       }
     }
-    vidas = 3;
+    kopeksTotalesSesion += kopeksTotales;
     partidaTerminada = false;
     partidaGanada = false;
     velocidadX = 0;
@@ -278,9 +350,16 @@ class _PantallaPixelPerdidoState extends State<PantallaPixelPerdido>
           mapaCargado[filaRevisada][colRevisada] = '.';
           kopeksRecogidos++;
         } else if (contenido == 'F') {
-          partidaTerminada = true;
-          partidaGanada = true;
-          _guardarHighscore();
+          // Bandera: si quedan niveles, avanzar; si era el último,
+          // terminar la sesión victoriosa y otorgar sellos.
+          if (nivelActual < nivelesPixelPerdido.length - 1) {
+            nivelActual++;
+            _cargarMapa(reiniciarSesion: false);
+          } else {
+            partidaTerminada = true;
+            partidaGanada = true;
+            _guardarHighscore();
+          }
         }
       }
     }
@@ -301,6 +380,7 @@ class _PantallaPixelPerdidoState extends State<PantallaPixelPerdido>
 
   void _perderVida() {
     vidas -= 1;
+    sesionSinMorir = false;
     if (vidas <= 0) {
       partidaTerminada = true;
       partidaGanada = false;
@@ -332,8 +412,17 @@ class _PantallaPixelPerdidoState extends State<PantallaPixelPerdido>
 
     if (partidaGanada) {
       _intentarOtorgarSello(estado, 'sello_pixel_reformado');
-      if (kopeksTotales > 0 && kopeksRecogidos >= kopeksTotales) {
+      // Recolector: requiere TODOS los kopeks de los 3 niveles. Sumamos
+      // los del último nivel (aún no acumulado) a los previos.
+      final int kopeksTotalSesion =
+          kopeksAcumuladosSesion + kopeksRecogidos;
+      if (kopeksTotalesSesion > 0 &&
+          kopeksTotalSesion >= kopeksTotalesSesion) {
         _intentarOtorgarSello(estado, 'sello_recolector_total');
+      }
+      // Topógrafo: completar los 3 niveles sin morir.
+      if (sesionSinMorir) {
+        _intentarOtorgarSello(estado, 'sello_topografo_universal');
       }
       // Ganar reinicia la racha de derrotas.
       estado.inventario.remove(_kClaveDerrotasSeguidasPixel);
@@ -471,12 +560,13 @@ class _PantallaPixelPerdidoState extends State<PantallaPixelPerdido>
   }
 
   Widget _construirCabecera(int mejor) {
+    final String etiquetaNivel = 'Π-${_romanos(nivelActual + 1)}';
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        const Text(
-          'COSMONAUTA · PÍXEL PERDIDO',
-          style: TextStyle(
+        Text(
+          'COSMONAUTA · PÍXEL PERDIDO · $etiquetaNivel',
+          style: const TextStyle(
             fontFamily: 'CosmoMono',
             fontSize: 18,
             fontWeight: FontWeight.w900,
@@ -486,6 +576,9 @@ class _PantallaPixelPerdidoState extends State<PantallaPixelPerdido>
         ),
         Row(
           children: [
+            _chip('NIVEL',
+                '${nivelActual + 1} / ${nivelesPixelPerdido.length}'),
+            const SizedBox(width: 6),
             _chip('VIDAS', '$vidas'),
             const SizedBox(width: 6),
             _chip('KOPEKS', '$kopeksRecogidos / $kopeksTotales',
@@ -502,6 +595,21 @@ class _PantallaPixelPerdidoState extends State<PantallaPixelPerdido>
         ),
       ],
     );
+  }
+
+  /// Conversión simple a numeración romana (1..3) usada para etiquetar
+  /// los niveles del minijuego como Π-I / Π-II / Π-III.
+  String _romanos(int numero) {
+    switch (numero) {
+      case 1:
+        return 'I';
+      case 2:
+        return 'II';
+      case 3:
+        return 'III';
+      default:
+        return numero.toString();
+    }
   }
 
   Widget _chip(String etiqueta, String valor, {bool acentuado = false}) {
@@ -672,8 +780,8 @@ class _PantallaPixelPerdidoState extends State<PantallaPixelPerdido>
                 children: [
                   Text(
                     gano
-                        ? 'EXPEDIENTE Π-1 · CERRADO'
-                        : 'EXPEDIENTE Π-1 · INCOMPLETO',
+                        ? 'EXPEDIENTE Π · ARCHIVADO'
+                        : 'EXPEDIENTE Π · INCOMPLETO',
                     style: TextStyle(
                       fontFamily: 'CosmoMono',
                       fontSize: 16,
@@ -687,10 +795,13 @@ class _PantallaPixelPerdidoState extends State<PantallaPixelPerdido>
                   const SizedBox(height: 6),
                   Text(
                     gano
-                        ? 'El Camarada Cadete alcanza la bandera roja. '
-                            'Kopeks recogidos: $kopeksRecogidos / $kopeksTotales.'
-                        : 'Tres caídas. El Comité registra la incidencia '
-                            '(racha: $derrotasAcumuladas / $_kRachaParaSelloMartir).',
+                        ? 'El Camarada Cadete completa los ${nivelesPixelPerdido.length} '
+                            'recorridos del Píxel.\n'
+                            'Kopeks totales: ${kopeksAcumuladosSesion + kopeksRecogidos} / '
+                            '$kopeksTotalesSesion.'
+                        : 'Tres caídas en el nivel Π-${_romanos(nivelActual + 1)}. '
+                            'El Comité registra la incidencia (racha: '
+                            '$derrotasAcumuladas / $_kRachaParaSelloMartir).',
                     style: const TextStyle(
                       fontFamily: 'CosmoSerif',
                       fontSize: 13,

@@ -147,13 +147,27 @@ const List<SelloF447> catalogoSellosF447 = <SelloF447>[
     nombreCorto: 'RECOLECT.',
     tituloLargo: 'Sello del Recolector Íntegro de Kopeks',
     descripcionNarrativa:
-        'Recogiste TODOS los kopeks intergalácticos de un recorrido sin '
-        'dejarte ni uno. Eficiencia digna de auditoría.',
+        'Recogiste TODOS los kopeks intergalácticos de los tres recorridos '
+        'sin dejarte ni uno. Eficiencia digna de auditoría.',
     decretoComite:
         'Decreto F-447/Π-3: "Se sospecha que el camarada cadete acumula '
         'capital extra-soviético. Investigación abierta. Mientras tanto, '
         'se le condecora."',
     categoria: CategoriaSelloF447.meritoTramitador,
+    idOrigen: 'pixel_perdido',
+  ),
+  SelloF447(
+    id: 'sello_topografo_universal',
+    nombreCorto: 'TOPÓGR.',
+    tituloLargo: 'Sello del Topógrafo Universal',
+    descripcionNarrativa:
+        'Cruzaste los tres recorridos del Píxel sin caer ni una sola vez. '
+        'El Comité no entiende cómo es posible. Tampoco lo investiga.',
+    decretoComite:
+        'Decreto F-447/Π-4: "Camarada cadete demuestra dominio total del '
+        'territorio cuadriculado. Se le encomienda redactar el próximo '
+        'plano (en grafito blando para que pueda corregirse)."',
+    categoria: CategoriaSelloF447.cumbreDelPartido,
     idOrigen: 'pixel_perdido',
   ),
 ];
