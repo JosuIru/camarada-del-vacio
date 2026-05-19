@@ -3,6 +3,8 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
+import '../datos/otorgador_sellos.dart';
+import '../datos/sellos_f447.dart';
 import '../models/game_state.dart';
 import '../widgets/propaganda_button.dart';
 import 'pintor_rotulador.dart';
@@ -99,6 +101,16 @@ class _PantallaSnowKamaradaState extends State<PantallaSnowKamarada>
   static const double cooldownDisparoConCafe = 0.10;
   int burocratasDerrotadosAcumulados = 0;
   bool cafePowerUpActivo = false;
+  /// Veces que el cadete ha activado el power-up café en la partida
+  /// actual (incrementado al consumirlo). Umbral 3 = Sello Cafeína.
+  int cafesActivadosEstaPartida = 0;
+  /// True mientras el cadete no haya perdido ninguna vida en la sesión
+  /// actual. Pre-requisito para el Sello de la Purga Capitalista.
+  bool sesionSnowSinMorir = true;
+  /// Sellos F-447 que el cadete obtiene en esta sesión concreta del
+  /// minijuego. Se rellena al finalizar la partida y se muestra en
+  /// el HUD si así se desea (pendiente de overlay propio de Snow).
+  final List<SelloF447> sellosObtenidosEnEstaPartida = <SelloF447>[];
   double tiempoEfectoCafeRestante = 0;
   Offset? posicionCafePowerUp; // coords mundo (0..1) cuando aparece
   bool cafePowerUpDisponible = false;
@@ -229,6 +241,7 @@ class _PantallaSnowKamaradaState extends State<PantallaSnowKamarada>
           cafePowerUpDisponible = false;
           posicionCafePowerUp = null;
           cafePowerUpActivo = true;
+          cafesActivadosEstaPartida++;
           tiempoEfectoCafeRestante = duracionEfectoCafe;
           puntuacion += 50;
         }
@@ -675,6 +688,7 @@ class _PantallaSnowKamaradaState extends State<PantallaSnowKamarada>
   void _golpearCadete() {
     vidas -= 1;
     tiempoInvulnerable = 1.3;
+    sesionSnowSinMorir = false;
     if (vidas <= 0) {
       partidaTerminada = true;
       partidaGanada = false;
@@ -686,6 +700,31 @@ class _PantallaSnowKamaradaState extends State<PantallaSnowKamarada>
     final int previo = _leerHighscoreSnow(widget.estado);
     if (puntuacion > previo) {
       _guardarHighscoreSnow(widget.estado, puntuacion);
+    }
+    _otorgarSellosPorResultado();
+  }
+
+  /// Otorga sellos F-447 según el resultado:
+  /// - Ω-1 Tramitador Helado: completar las oleadas (victoria).
+  /// - Ω-2 Purga Capitalista: ganar sin perder ninguna vida.
+  /// - Ω-3 Café Inagotable: activar 3 o más cafés (con o sin victoria).
+  void _otorgarSellosPorResultado() {
+    final estado = widget.estado;
+    sellosObtenidosEnEstaPartida.clear();
+    if (partidaGanada) {
+      final s1 = OtorgadorSellos.intentarOtorgar(
+          estado, 'sello_snow_tramitador_helado');
+      if (s1 != null) sellosObtenidosEnEstaPartida.add(s1);
+      if (sesionSnowSinMorir) {
+        final s2 = OtorgadorSellos.intentarOtorgar(
+            estado, 'sello_snow_purga_capitalista');
+        if (s2 != null) sellosObtenidosEnEstaPartida.add(s2);
+      }
+    }
+    if (cafesActivadosEstaPartida >= 3) {
+      final s3 = OtorgadorSellos.intentarOtorgar(
+          estado, 'sello_snow_cafeina_eterna');
+      if (s3 != null) sellosObtenidosEnEstaPartida.add(s3);
     }
   }
 
@@ -719,6 +758,11 @@ class _PantallaSnowKamaradaState extends State<PantallaSnowKamarada>
           oleadaActual = 1;
           partidaTerminada = false;
           partidaGanada = false;
+          // Reset contadores de sesión para que los sellos en racha
+          // (cafés, sin morir) no acarreen estado de la partida vieja.
+          cafesActivadosEstaPartida = 0;
+          sesionSnowSinMorir = true;
+          sellosObtenidosEnEstaPartida.clear();
           formulariosVolando.clear();
           bolasRodantes.clear();
           _generarOleada();
