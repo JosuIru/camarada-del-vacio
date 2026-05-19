@@ -2,6 +2,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import '../data/dialogues_madre_ferruginosa.dart';
 import '../data/dialogues_ostrog.dart';
+import '../datos/comentarios_npc_sellos.dart';
 import '../data/huevos_de_pascua.dart';
 import '../minijuegos/pantalla_snow_kamarada.dart';
 import '../minijuegos/pantalla_transformacion.dart';
@@ -321,6 +322,13 @@ class _PantallaCantinaState extends State<PantallaCantina>
   void _interactuarSamovarDescanso() {
     _registrar(
         'Samovar comunal. Estrella roja sobre el costado. El grifo no cierra del todo y el agua hierve permanentemente, como una conciencia.');
+    // Si el cadete ya tiene sellos archivados, un veterano de la
+    // cantina susurra un rumor sobre ellos. Si no, silencio (nadie habla
+    // de quien no ha hecho méritos todavía).
+    final rumor = rumorSobreSellosDelCadete(widget.estado);
+    if (rumor != null) {
+      _registrar('Un veterano sin galones, junto al grifo: «$rumor»');
+    }
   }
 
   void _interactuarVentanaCosmica() {

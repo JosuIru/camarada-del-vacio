@@ -3,6 +3,7 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
+import '../datos/otorgador_sellos.dart';
 import '../models/game_state.dart';
 import '../theme.dart';
 import '../widgets/propaganda_button.dart';
@@ -77,6 +78,15 @@ class _PantallaInspektorPacmanState extends State<PantallaInspektorPacman>
 
   late List<_Komisario> komisarios;
   int expedientesPendientes = 0;
+  /// Tintas (celda 3) totales que tenía el laberinto al iniciar la
+  /// partida y tintas recogidas hasta ahora en la sesión. Si la
+  /// proporción coincide → Sello Ξ-2 Tinta Inagotable.
+  int tintasTotalesEnLaberinto = 0;
+  int tintasRecogidasEstaPartida = 0;
+  /// Set de índices de komisarios que han sido aturdidos y devueltos
+  /// al corral en esta sesión. Si llega a 4 (los cuatro), Sello Ξ-3
+  /// Burlador Soviético.
+  final Set<int> komisariosBurladosEstaPartida = <int>{};
   int puntuacion = 0;
   int vidas = 3;
   bool partidaTerminada = false;
@@ -162,9 +172,13 @@ class _PantallaInspektorPacmanState extends State<PantallaInspektorPacman>
       },
     );
     expedientesPendientes = 0;
+    tintasTotalesEnLaberinto = 0;
+    tintasRecogidasEstaPartida = 0;
+    komisariosBurladosEstaPartida.clear();
     for (final fila in celdas) {
       for (final celda in fila) {
         if (celda == 0) expedientesPendientes++;
+        if (celda == 3) tintasTotalesEnLaberinto++;
       }
     }
     // Posiciones centradas en celda (sufijo .5 para que casiCentrado
@@ -349,6 +363,7 @@ class _PantallaInspektorPacmanState extends State<PantallaInspektorPacman>
       celdas[filaActual][colActual] = 2;
       segundosCazaInvertida = 6.0;
       puntuacion += 50;
+      tintasRecogidasEstaPartida++;
       for (final komisario in komisarios) {
         komisario.aturdido = true;
       }
@@ -537,7 +552,8 @@ class _PantallaInspektorPacmanState extends State<PantallaInspektorPacman>
   }
 
   void _resolverColisiones() {
-    for (final komisario in komisarios) {
+    for (int i = 0; i < komisarios.length; i++) {
+      final komisario = komisarios[i];
       final double dx = komisario.posX - inspektorX;
       final double dy = komisario.posY - inspektorY;
       final double distancia = math.sqrt(dx * dx + dy * dy);
@@ -550,6 +566,13 @@ class _PantallaInspektorPacmanState extends State<PantallaInspektorPacman>
           komisario.direccionY = -1;
           komisario.aturdido = false;
           puntuacion += 200;
+          // Ξ-3 Burlador: aturdir+encarcelar a los 4 komisarios
+          // distintos en una misma sesión.
+          komisariosBurladosEstaPartida.add(i);
+          if (komisariosBurladosEstaPartida.length >= 4) {
+            OtorgadorSellos.intentarOtorgar(
+                widget.estado, 'sello_pacman_burlador');
+          }
         } else {
           _perderVida();
           return;
@@ -585,6 +608,18 @@ class _PantallaInspektorPacmanState extends State<PantallaInspektorPacman>
     final int previo = _leerHighscorePacman(widget.estado);
     if (puntuacion > previo) {
       _guardarHighscorePacman(widget.estado, puntuacion);
+    }
+    // Sellos F-447 Ξ:
+    // - Ξ-1 Archivero: ganar (limpiar todos los expedientes).
+    // - Ξ-2 Tinta Inagotable: recoger TODAS las tintas del laberinto.
+    if (partidaGanada) {
+      OtorgadorSellos.intentarOtorgar(
+          widget.estado, 'sello_pacman_archivero');
+    }
+    if (tintasTotalesEnLaberinto > 0 &&
+        tintasRecogidasEstaPartida >= tintasTotalesEnLaberinto) {
+      OtorgadorSellos.intentarOtorgar(
+          widget.estado, 'sello_pacman_tinta_inagotable');
     }
   }
 
