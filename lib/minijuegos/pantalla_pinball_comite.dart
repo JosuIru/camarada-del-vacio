@@ -51,12 +51,16 @@ class _PantallaPinballComiteState extends State<PantallaPinballComite>
 
   /// Cap a la velocidad absoluta de la bola, en unidades relativas
   /// por segundo. Evita tunneling cuando la bola cae mucho tiempo
-  /// y permite ver al cadete bola en cada frame.
-  static const double velocidadMaximaBola = 2.4;
+  /// y permite ver al cadete bola en cada frame. Bajado de 2.4 a 1.9
+  /// tras feedback de partida: la bola iba demasiado rápida para
+  /// reaccionar con las paletas, sobre todo al venir rebotada de
+  /// bumpers o slingshots.
+  static const double velocidadMaximaBola = 1.9;
 
-  /// Velocidad inicial maxima del lanzador. Bajada de 3.6 a 2.6 para
-  /// que la bola arranque con menos energía y siga reglas del cap.
-  static const double velocidadLanzadorMaxima = 2.6;
+  /// Velocidad inicial maxima del lanzador. Bajada de 2.6 a 2.2 para
+  /// que el lanzamiento sea más manejable. Sigue siendo suficiente
+  /// para coronar la rampa superior cuando se carga al 70 %+.
+  static const double velocidadLanzadorMaxima = 2.2;
 
   /// Anchura del carril del lanzador.
   static const double anchoCarrilLanzador = 0.10;
@@ -508,13 +512,20 @@ class _PantallaPinballComiteState extends State<PantallaPinballComite>
         puntos: 200,
         etiqueta: '447',
       ),
+      // Targets derechos REPOSICIONADOS fuera del carril del lanzador
+      // (que ocupa x >= 0.90 = anchoMesa - anchoCarrilLanzador). Antes
+      // estaban en x=0.93..0.98, lo cual intersectaba la trayectoria
+      // ascendente de la bola desde el lanzador: la bola rebotaba en
+      // estos targets antes de alcanzar la rampa curva superior. Ahora
+      // están justo al borde INTERNO del carril (x=0.83..0.88),
+      // simétricos a los izquierdos respecto al campo de juego.
       _TargetVertical(
-        rect: const Rect.fromLTRB(0.93, 0.40, 0.98, 0.55),
+        rect: const Rect.fromLTRB(0.83, 0.40, 0.88, 0.55),
         puntos: 200,
         etiqueta: 'F',
       ),
       _TargetVertical(
-        rect: const Rect.fromLTRB(0.93, 0.60, 0.98, 0.75),
+        rect: const Rect.fromLTRB(0.83, 0.60, 0.88, 0.75),
         puntos: 200,
         etiqueta: '447',
       ),
@@ -588,13 +599,16 @@ class _PantallaPinballComiteState extends State<PantallaPinballComite>
         puntos: 250,
         etiqueta: 'C',
       ),
+      // Misma razón que en Antecámara: estos targets antes a x=0.92..0.97
+      // estaban dentro del carril del lanzador (x >= 0.90) y bloqueaban
+      // la subida de la bola. Movidos al borde interno del carril.
       _TargetVertical(
-        rect: const Rect.fromLTRB(0.92, 0.30, 0.97, 0.42),
+        rect: const Rect.fromLTRB(0.82, 0.30, 0.87, 0.42),
         puntos: 250,
         etiqueta: 'P',
       ),
       _TargetVertical(
-        rect: const Rect.fromLTRB(0.92, 0.45, 0.97, 0.57),
+        rect: const Rect.fromLTRB(0.82, 0.45, 0.87, 0.57),
         puntos: 250,
         etiqueta: 'C',
       ),
