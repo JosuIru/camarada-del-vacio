@@ -259,14 +259,15 @@ class _PantallaMapaOverworldState extends State<PantallaMapaOverworld>
           final altoTotal = restricciones.maxHeight;
           return Stack(
             children: [
-              // Fondo PNG del plano interior de la Pravda-12. El
-              // painter procedimental queda como capa SUPERIOR para
-              // las animaciones (módulos pulsantes, ruta marcada, etc.)
-              // — el PNG aporta la trama de papel cuadriculado, las
-              // tuberías y la rotulación a mano.
+              // Fondo PNG del plano interior de la Pravda-12 (§22 del
+              // briefing). El painter procedimental queda como capa
+              // SUPERIOR para las animaciones (módulos pulsantes, ruta
+              // marcada, indicador de ubicación) — el PNG aporta la
+              // arquitectura, pasillos, tuberías exteriores y sellos.
               const Positioned.fill(
                 child: Image(
-                  image: AssetImage('assets/images/fondo_overworld.png'),
+                  image: AssetImage(
+                      'assets/images/fondo_pravda12_interior.png'),
                   fit: BoxFit.cover,
                   alignment: Alignment.center,
                   filterQuality: FilterQuality.high,
